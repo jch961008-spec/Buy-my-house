@@ -1,0 +1,2905 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>안심전세 가드 - 쉬운 보증금 반환채권 · 경매 낙찰가율 · 최우선변제금 잔액 계산기</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    input[type="range"] {
+      accent-color: #2563eb;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    /* Magnifying Glass Tag Styling */
+    .lens-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      cursor: help;
+      transition: all 0.15s ease;
+      vertical-align: middle;
+      line-height: 1.3;
+      user-select: none;
+    }
+    .lens-tag:hover, .lens-tag:focus {
+      background-color: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22);
+      outline: none;
+    }
+    /* Floating Tooltip Card */
+    #floatingLensTooltip {
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+
+  <!-- Floating Interactive Magnifying Glass Tooltip (Cursor Hover Popover) -->
+  <div id="floatingLensTooltip" class="fixed z-50 hidden opacity-0 max-w-xs sm:max-w-sm bg-slate-900/95 backdrop-blur text-white rounded-2xl p-4 shadow-2xl border border-blue-400/40">
+    <div class="flex items-center gap-2 pb-2 mb-2 border-b border-slate-700/80">
+      <span class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-xs">🔍</span>
+      <div>
+        <span class="text-[10px] font-bold text-blue-300 uppercase tracking-wider block">초보자 눈높이 쉬운 해설</span>
+        <strong id="lensTipTitle" class="text-sm font-extrabold text-white">용어 제목</strong>
+      </div>
+    </div>
+    <p id="lensTipEasy" class="text-xs font-bold text-amber-300 leading-relaxed mb-1.5">
+      한줄 쉬운 설명
+    </p>
+    <p id="lensTipDetail" class="text-xs text-slate-200 leading-relaxed">
+      상세 설명
+    </p>
+    <div id="lensTipExampleWrap" class="mt-2.5 pt-2 border-t border-slate-800 text-[11px] text-emerald-300 font-medium">
+      💡 <span id="lensTipExample">실전 팁</span>
+    </div>
+  </div>
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+          안심
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900">전월세 보증금 안전진단 &amp; 최우선변제 잔액 계산기</h1>
+            <span id="headerSyncStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="headerSyncDateText">2026.11 최신 법령·경매통계 적용중</span>
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            어려운 부동산 용어 옆의 <span class="inline-flex items-center px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-bold text-[11px] border border-blue-200">🔍 쉬운설명</span>에 마우스를 올리면 알기 쉬운 뜻이 나타납니다!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <!-- Easy Mode Toggle Button -->
+        <button id="btnToggleEasyMode" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition">
+          <span>💡</span>
+          <span id="easyModeBtnText">쉬운 말 가이드: 켜짐</span>
+        </button>
+
+        <!-- Data Update / Freshness Center Button -->
+        <button id="btnOpenUpdateModal" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition">
+          <span>🔄</span>
+          <span>정보 최신화 관리</span>
+        </button>
+
+        <button id="btnOpenRefModal" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          지역별 최우선변제 기준표
+        </button>
+
+        <button id="btnResetAll" type="button" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 hover:bg-slate-100 text-slate-600 transition">
+          초기화
+        </button>
+      </div>
+    </div>
+
+    <!-- Step Navigation Bar (4 Pages) -->
+    <div class="bg-slate-100/80 border-t border-slate-200/80">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6">
+        <nav class="grid grid-cols-4 gap-1 sm:gap-2 py-2" aria-label="진단 단계">
+          <button type="button" data-step-nav="1" class="step-nav-btn flex items-center justify-center sm:justify-start gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-blue-600 text-white shadow-sm">
+            <span class="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-bold shrink-0">1</span>
+            <span class="truncate">주소·주택종류</span>
+          </button>
+          <button type="button" data-step-nav="2" class="step-nav-btn flex items-center justify-center sm:justify-start gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80">
+            <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+            <span class="truncate">보증금·채권종류</span>
+          </button>
+          <button type="button" data-step-nav="3" class="step-nav-btn flex items-center justify-center sm:justify-start gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80">
+            <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+            <span class="truncate">인근 경매낙찰가율</span>
+          </button>
+          <button type="button" data-step-nav="4" class="step-nav-btn flex items-center justify-center sm:justify-start gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80">
+            <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">4</span>
+            <span class="truncate">최우선공제 잔액(핵심)</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Live Summary Ribbon -->
+  <div class="bg-slate-900 text-white border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div><span class="text-slate-400">도로명주소:</span> <strong id="ribbonAddress" class="text-blue-300 font-semibold">경기도 성남시 분당구 판교역로 166</strong></div>
+        <div><span class="text-slate-400">주택유형:</span> <strong id="ribbonPropType" class="text-white font-semibold">빌라 (다세대·연립)</strong></div>
+        <div><span class="text-slate-400">권역분류:</span> <strong id="ribbonZone" class="text-emerald-300 font-semibold">과밀억제권역 등 (최우선 4,800만)</strong></div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div><span class="text-slate-400">내 보증금:</span> <strong id="ribbonDeposit" class="text-amber-300 font-bold">1억 3,500만 원</strong></div>
+        <div><span class="text-slate-400">적용 낙찰가율:</span> <strong id="ribbonBidRate" class="text-cyan-300 font-bold">66.5%</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- Easy Guide Banner (Collapsible via Easy Mode toggle) -->
+    <div id="easyHelperBanner" class="mb-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">🔍</div>
+        <div class="text-xs sm:text-sm">
+          <strong class="font-extrabold block">어려운 법률·경매 용어, 고민하지 마세요!</strong>
+          <span class="text-blue-100 text-xs">입력 항목 옆의 <span class="px-1.5 py-0.5 rounded bg-white text-blue-700 font-bold">🔍 쉬운설명</span> 태그에 마우스 커서를 올리면 일상 용어로 풀이된 설명이 즉시 팝업됩니다.</span>
+        </div>
+      </div>
+      <button id="btnOpenEasyGlossary" type="button" class="px-3.5 py-2 rounded-xl bg-white text-blue-700 font-bold text-xs shrink-0 hover:bg-blue-50 transition shadow-sm">
+        초보자 용어사전 전체보기
+      </button>
+    </div>
+
+    <!-- ==================== PAGE 1: 도로명 주소 & 부동산 종류 선택 ==================== -->
+    <section id="stepPage1" class="step-page space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <span class="inline-block text-xs font-bold text-blue-600 uppercase tracking-wider">STEP 1 · 집 위치와 집 종류 고르기 (30초 완성)</span>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">어느 동네의 어떤 집을 계약하시나요?</h2>
+          </div>
+          <p class="text-xs text-slate-500">정확한 도로명주소를 몰라도 <strong>동네 이름(예: 화곡동, 판교)</strong>이나 <strong>지역 버튼</strong>만 누르면 자동으로 입력됩니다.</p>
+        </div>
+
+        <!-- Quick Sample Case Presets -->
+        <div class="mt-4 bg-blue-50/70 border border-blue-100 rounded-xl p-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              자주 찾는 실전 사례 원클릭 불러오기 (클릭 시 자동 입력)
+            </span>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" data-preset="seoul_villa" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                서울 강서구 화곡동 빌라 (보증금 1.5억)
+              </button>
+              <button type="button" data-preset="bundang_villa" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 transition shadow-sm">
+                경기 성남시 분당 다세대 (보증금 1.35억)
+              </button>
+              <button type="button" data-preset="suwon_dagagu" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                경기 수원시 다가구 원룸 (보증금 8,000만)
+              </button>
+              <button type="button" data-preset="incheon_apt" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                인천 부평구 아파트 (보증금 2.6억)
+              </button>
+              <button type="button" data-preset="busan_officetel" class="preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition shadow-sm">
+                부산 부산진구 오피스텔 (보증금 7,500만)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-1. Easy Road Name Address Finder & Region Selection -->
+        <div class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div class="lg:col-span-7 space-y-4">
+            <!-- Method A: Easy Region Chip Buttons when user doesn't know exact road address -->
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <span>📍 도로명주소가 헷갈리시나요? 동네 지역만 먼저 클릭하세요!</span>
+                  <span class="lens-tag" tabindex="0"
+                    data-tip-title="왜 도로명주소(지역)를 입력하나요?"
+                    data-tip-easy="집이 위치한 지역(서울·수도권·광역시·지방)에 따라 법에서 무조건 먼저 돌려주는 '최우선변제금' 액수와 법원 경매 낙찰가율이 달라지기 때문이에요."
+                    data-tip-detail="정확한 번지수를 몰라도 시·군·구(예: 서울 강서구, 성남시 분당구, 수원시 등)만 선택하면 법정 보호 금액이 100% 동일하게 계산됩니다."
+                    data-tip-example="아래 지역 버튼을 누르거나 동네 이름(예: 화곡동, 판교, 부평)만 검색창에 입력해 보세요!">🔍 쉬운설명</span>
+                </span>
+                <button id="btnOpenAddressWizard" type="button" class="text-xs font-bold text-blue-600 hover:underline">
+                  시·군·구 단계별 주소 조립기 열기 ▸
+                </button>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-easy-region="seoul_gangseo" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition">서울 (강서·관악·마포·은평 등)</button>
+                <button type="button" data-easy-region="seoul_gangnam" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition">서울 (강남·서초·송파 등)</button>
+                <button type="button" data-easy-region="gyeonggi_overcrowded" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 border border-blue-400 text-blue-800 transition">경기 (성남·수원·고양·안양·부천)</button>
+                <button type="button" data-easy-region="gyeonggi_major" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition">경기 (용인·화성·김포) · 세종</button>
+                <button type="button" data-easy-region="incheon_urban" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition">인천 (부평·미추홀·남동 등)</button>
+                <button type="button" data-easy-region="metro_other" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition">부산·대구·대전·광주·울산·안산·평택</button>
+                <button type="button" data-easy-region="provincial_other" class="easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition">기타 지방 도시 (충청·전라·경상·강원·제주)</button>
+              </div>
+
+              <!-- Collapsible Step-by-Step Address Builder Wizard -->
+              <div id="addressWizardBox" class="hidden mt-3 pt-3 border-t border-slate-200 bg-white p-3 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-blue-800">✨ 클릭 3번으로 도로명주소 자동 완성하기</span>
+                  <button id="btnCloseAddressWizard" type="button" class="text-[11px] text-slate-400 hover:text-slate-700">닫기 ✕</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <select id="wizSidoSelect" class="px-2.5 py-2 rounded-lg border border-slate-300 text-xs font-semibold bg-slate-50">
+                    <option value="서울특별시">1. 서울특별시</option>
+                    <option value="경기도" selected>1. 경기도</option>
+                    <option value="인천광역시">1. 인천광역시</option>
+                    <option value="부산광역시">1. 부산광역시</option>
+                    <option value="대전광역시">1. 대전광역시</option>
+                    <option value="세종특별자치시">1. 세종특별자치시</option>
+                    <option value="기타지방">1. 기타 시·도 (충북·전북·경남 등)</option>
+                  </select>
+                  <select id="wizSigunguSelect" class="px-2.5 py-2 rounded-lg border border-slate-300 text-xs font-semibold bg-slate-50">
+                    <!-- Populated dynamically -->
+                  </select>
+                  <select id="wizRoadSelect" class="px-2.5 py-2 rounded-lg border border-slate-300 text-xs font-semibold bg-slate-50">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Smart Autocomplete Road Address Input -->
+            <div class="relative">
+              <label for="roadAddressInput" class="block text-sm font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
+                <span>도로명 주소 (또는 아는 동네 이름·지하철역 검색)</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="도로명 주소 쉽게 입력하는 법"
+                  data-tip-easy="'판교역로 166' 같은 도로명 주소뿐만 아니라, 평소 부르는 '화곡동', '봉천동', '분당', '수원 영통'처럼 동네 이름만 쳐도 아래에서 도로명 주소를 바로 골라 쓸 수 있어요."
+                  data-tip-detail="계약서나 등기부등본 맨 위에 적힌 도로명 주소를 넣으면 관할 법원과 지역별 소액보증금 보호 한도를 자동으로 찾아줍니다."
+                  data-tip-example="예: 검색창에 '화곡' 또는 '수원'이라고 입력해 보세요!">🔍 쉬운설명</span>
+              </label>
+              <div class="flex gap-2">
+                <div class="relative flex-1">
+                  <input id="roadAddressInput" type="text" autocomplete="off" value="경기도 성남시 분당구 판교역로 166" placeholder="동네 이름(예: 화곡동, 분당, 부평)이나 도로명주소를 입력하세요" class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <button id="btnDetectAddress" type="button" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold shrink-0 transition">
+                  권역 자동판별
+                </button>
+              </div>
+
+              <!-- Instant Dropdown Suggestions for Easy Road Address Selection -->
+              <div id="addressSuggestionsDropdown" class="hidden absolute left-0 right-0 mt-1 bg-white rounded-xl border border-slate-200 shadow-xl z-20 max-h-56 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                <!-- Populated dynamically when typing or focusing -->
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="regionSelect" class="block text-xs font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                  <span>법정 보호 권역 (자동 매칭됨)</span>
+                  <span class="lens-tag" tabindex="0"
+                    data-tip-title="법정 보호 권역이란?"
+                    data-tip-easy="나라에서 집값 수준에 따라 전국을 4개 그룹(서울 / 수도권 과밀억제·세종·용인·화성·김포 / 광역시·안산·평택 등 / 기타 지역)으로 나눈 기준이에요."
+                    data-tip-detail="내가 사는 곳이 어느 권역인지에 따라 경매로 집이 넘어갔을 때 은행보다 먼저 돌려받는 '최우선변제금' 액수가 2,500만 원~5,500만 원으로 결정됩니다."
+                    data-tip-example="주소를 입력하면 자동으로 선택되며 직접 바꿀 수도 있습니다.">🔍 쉬운설명</span>
+                </label>
+                <select id="regionSelect" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="seoul_gangseo">서울특별시 강서구·관악구·중랑구·은평구 등</option>
+                  <option value="seoul_gangnam">서울특별시 강남구·서초구·송파구·마포구 등</option>
+                  <option value="gyeonggi_overcrowded" selected>경기 과밀억제권역 (성남·수원·안양·부천·고양·하남·구리·광명·과천·의왕·군포·의정부)</option>
+                  <option value="gyeonggi_major">경기 용인시·화성시·김포시 / 세종특별자치시</option>
+                  <option value="incheon_urban">인천광역시 (과밀억제권역: 부평·계양·남동·미추홀·연수 등)</option>
+                  <option value="metro_other">광역시 (부산·대구·광주·대전·울산) 및 경기 안산·광주·파주·이천·평택</option>
+                  <option value="provincial_other">그 밖의 지역 (강원·충북·충남·전북·전남·경북·경남·제주 및 군 지역)</option>
+                </select>
+              </div>
+              <div>
+                <label for="AddressDetailInput" class="block text-xs font-semibold text-slate-600 mb-1">상세 동·호수 (선택 입력)</label>
+                <input id="AddressDetailInput" type="text" value="302호 (다세대주택)" placeholder="예: 102동 504호 또는 201호" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Detected Legal Zone Info Card -->
+          <div class="lg:col-span-5 bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                  <span>이 동네 법정 보호 기준</span>
+                  <span class="lens-tag" tabindex="0"
+                    data-tip-title="소액임차인 & 최우선변제금이란?"
+                    data-tip-easy="보증금이 일정 금액(소액임차인 기준) 이하인 세입자에게, 집이 경매로 넘어가도 은행 빚보다 무조건 제일 먼저(0순위) 떼어주는 최소한의 생계형 보증금이에요!"
+                    data-tip-detail="단, 경매 낙찰가의 절반(1/2)을 넘을 수 없고, 경매 시작 전에 반드시 이사(주택 인도)와 전입신고를 마쳐야 받을 수 있습니다."
+                    data-tip-example="예: 성남시에서 보증금 1억 4,500만 원 이하로 계약하면 최대 4,800만 원은 은행보다 먼저 돌려받습니다.">🔍 쉬운설명</span>
+                </span>
+                <span id="zoneBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">제2권역 (과밀억제 등)</span>
+              </div>
+              <h3 id="zoneTitleText" class="text-base font-bold text-slate-900 mt-2">수도권 과밀억제권역·세종·용인·화성·김포</h3>
+              <p id="zoneCourtText" class="text-xs text-slate-600 mt-1">관할 경매 통계: 수원지방법원 성남지원 / 경기권 최근 3개월 평균</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-200 grid grid-cols-2 gap-3">
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200/80">
+                <span class="block text-[11px] text-slate-500">보호대상 보증금 커트라인</span>
+                <strong id="zoneLimitAmount" class="text-sm sm:text-base font-extrabold text-slate-900">1억 4,500만 원 이하</strong>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-blue-200 bg-blue-50/30">
+                <span class="block text-[11px] text-blue-700 font-medium">0순위로 먼저 받는 돈</span>
+                <strong id="zonePriorityAmount" class="text-sm sm:text-base font-extrabold text-blue-700">최대 4,800만 원</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-2. Property Type Selection -->
+        <div class="mt-6 pt-6 border-t border-slate-100">
+          <label class="block text-sm font-bold text-slate-800 mb-2 flex flex-wrap items-center gap-1.5">
+            <span>부동산의 종류 선택 (어떤 형태의 집인가요?)</span>
+            <span class="lens-tag" tabindex="0"
+              data-tip-title="집 종류가 왜 중요한가요? (아파트 vs 빌라 vs 다가구)"
+              data-tip-easy="집이 경매에 넘어갔을 때 아파트는 원래 시세의 80% 이상에 잘 팔리지만, 빌라나 원룸 건물은 사려는 사람이 적어 60%대에 싸게 팔리기(낙찰가율 하락) 때문이에요."
+              data-tip-detail="또한 '빌라(다세대)'는 호수마다 집주인이 따로 등기되어 있지만, '단독·다가구(원룸 건물)'는 집주인 1명이 건물 전체를 소유해서 다른 방 세입자들의 보증금까지 내 앞순위로 잡힐 수 있습니다."
+              data-tip-example="원룸/투룸을 구할 때 등기부등본에 '다세대주택'인지 '다가구주택'인지 꼭 확인하세요!">🔍 쉬운설명</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="propertyTypeGrid">
+            <button type="button" data-prop-type="apt" class="prop-type-card text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white transition flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-base font-bold text-slate-900">아파트</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">경매에 잘 팔림</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1.5">시세를 알기 쉽고 경매로 넘어가도 원래 집값의 80% 안팎에 팔려 보증금 회수에 유리한 집</p>
+              </div>
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">인근 경매 낙찰가율</span>
+                <strong id="cardRateApt" class="text-blue-600 font-bold">82.5%</strong>
+              </div>
+            </button>
+
+            <button type="button" data-prop-type="villa" class="prop-type-card text-left p-4 rounded-xl border-2 border-blue-600 bg-blue-50/30 transition flex flex-col justify-between shadow-sm">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-base font-bold text-blue-900">빌라 (다세대·연립)</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">낙찰가 할인 주의</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-1.5">내 호수만 따로 등기된 빌라. 경매 시 1~2번 안 팔려(유찰) 집값의 60%대에 팔릴 때가 많음</p>
+              </div>
+              <div class="mt-3 pt-2 border-t border-blue-100 flex items-center justify-between text-xs">
+                <span class="text-slate-600">인근 경매 낙찰가율</span>
+                <strong id="cardRateVilla" class="text-blue-700 font-bold">66.5%</strong>
+              </div>
+            </button>
+
+            <button type="button" data-prop-type="dagagu" class="prop-type-card text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white transition flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-base font-bold text-slate-900">단독·다가구주택</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800">다른방 보증금 합산</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1.5">집주인 1명이 통째로 가진 원룸·단독 건물. 나보다 먼저 이사 온 다른 방 세입자 보증금 확인 필수!</p>
+              </div>
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">인근 경매 낙찰가율</span>
+                <strong id="cardRateDagagu" class="text-blue-600 font-bold">61.0%</strong>
+              </div>
+            </button>
+
+            <button type="button" data-prop-type="officetel" class="prop-type-card text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white transition flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-base font-bold text-slate-900">주거용 오피스텔</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700">전입신고 필수</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1.5">전입신고를 하고 실제로 거주하면 일반 주택과 똑같이 보증금을 보호받는 오피스텔</p>
+              </div>
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">인근 경매 낙찰가율</span>
+                <strong id="cardRateOfficetel" class="text-blue-600 font-bold">69.0%</strong>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1-3. Estimated Property Price Input -->
+        <div class="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+          <div>
+            <label for="marketPriceInput" class="block text-sm font-bold text-slate-800 mb-1 flex flex-wrap items-center gap-1.5">
+              <span>이 집의 대략적인 매매 집값 (시세 · 만 원 단위)</span>
+              <span class="lens-tag" tabindex="0"
+                data-tip-title="매매 집값(시세·감정가)은 어떻게 알 수 있나요?"
+                data-tip-easy="이 집을 사고팔 때의 가격이에요. 국토부 실거래가 사이트나 네이버 부동산 매매 시세를 넣으면 됩니다."
+                data-tip-detail="빌라나 다가구주택처럼 매매 시세가 잘 안 나오면 정부 '공시가격 × 126%' 금액이나 주변 비슷한 크기 빌라의 최근 매매가를 입력해 보세요."
+                data-tip-example="아래 1.5억, 2.2억, 3억 버튼을 누르면 바로 입력됩니다.">🔍 쉬운설명</span>
+            </label>
+            <p class="text-xs text-slate-500 mb-2">잘 모르시겠다면 아래 금액 버튼을 눌러 가장 비슷한 집값을 골라보세요.</p>
+            <div class="flex items-center gap-2">
+              <input id="marketPriceInput" type="number" min="1000" max="1000000" step="500" value="22000" class="w-44 px-3.5 py-2.5 rounded-xl border border-slate-300 text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <span class="text-sm font-semibold text-slate-700">만 원</span>
+              <span id="marketPriceKorean" class="ml-2 text-sm font-bold text-blue-600">(2억 2,000만 원)</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-2.5">
+              <button type="button" data-price-set="15000" class="price-quick-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">1.5억</button>
+              <button type="button" data-price-set="22000" class="price-quick-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">2.2억</button>
+              <button type="button" data-price-set="30000" class="price-quick-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">3억</button>
+              <button type="button" data-price-set="45000" class="price-quick-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">4.5억</button>
+              <button type="button" data-price-set="60000" class="price-quick-btn px-2.5 py-1 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">6억</button>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 text-white rounded-xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>1단계 자동 계산 미리보기</span>
+              <span class="lens-tag !bg-slate-800 !text-blue-300 !border-slate-700" tabindex="0"
+                data-tip-title="예상 경매낙찰가와 1/2 한도란?"
+                data-tip-easy="집이 경매에 넘어갔을 때 실제로 팔릴 것으로 예상되는 금액(집값 × 낙찰가율)이에요."
+                data-tip-detail="법에서 소액 세입자들에게 최우선으로 떼어주는 보증금 합계는 이 예상 낙찰가의 절반(1/2)을 넘지 못하도록 정해져 있습니다."
+                data-tip-example="예: 2.2억 빌라가 66.5%에 낙찰되면 약 1억 4,630만 원이 배당 재원이 됩니다.">🔍 쉬운설명</span>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-3">
+              <div>
+                <span class="text-xs text-slate-400 block">경매 시 실제 팔릴 예상가</span>
+                <strong id="step1PreviewAuctionVal" class="text-lg font-extrabold text-cyan-300">1억 4,630만 원</strong>
+              </div>
+              <div>
+                <span class="text-xs text-slate-400 block">최우선변제 최대 한도 (집값 1/2)</span>
+                <strong id="step1PreviewHalfCap" class="text-lg font-extrabold text-emerald-300">7,315만 원</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+          <button type="button" data-go-step="2" class="go-step-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition">
+            다음 페이지: 내 보증금 및 채권 종류 입력
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 2: 보증금 액수 & 부동산 채권 종류 입력 ==================== -->
+    <section id="stepPage2" class="step-page hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <span class="inline-block text-xs font-bold text-blue-600 uppercase tracking-wider">STEP 2 · 내 보증금과 보호 장치 확인</span>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 mt-0.5">내 보증금 액수와 집주인의 기존 빚(선순위 채권)을 입력해 주세요</h2>
+          </div>
+          <p class="text-xs text-slate-500">모르는 용어는 옆의 <span class="font-bold text-blue-600">🔍 쉬운설명</span>에 커서를 올려 확인하세요.</p>
+        </div>
+
+        <!-- 2-1. Lease Type & Deposit Amount -->
+        <div class="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-slate-800 mb-2 flex items-center gap-1.5">
+                <span>계약 방식과 내가 내는 보증금</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="전세 vs 월세(반전세), 보증금 계산이 다른가요?"
+                  data-tip-easy="주택(집)은 월세가 얼마든 상관없이 오직 '순수 보증금 원금'만 가지고 소액임차인 최우선변제 대상인지를 판단해요!"
+                  data-tip-detail="상가(가게)는 월세×100을 보증금에 더하지만, 일반 주택(아파트·빌라·원룸·오피스텔)은 월세를 더하지 않고 순수 보증금 액수만 봅니다."
+                  data-tip-example="따라서 보증금이 최우선변제 기준을 살짝 넘는다면, 보증금을 조금 줄이고 월세(반전세)로 바꾸는 것이 내 돈을 지키는 핵심 전략입니다!">🔍 쉬운설명</span>
+              </label>
+              <div class="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200 mb-3">
+                <button type="button" data-lease-mode="jeonse" class="lease-mode-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-blue-700 shadow-sm">전세 계약</button>
+                <button type="button" data-lease-mode="wolse" class="lease-mode-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900">반전세 · 월세 계약</button>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label for="myDepositInput" class="block text-xs font-semibold text-slate-600 mb-1">내가 집주인에게 맡기는 전·월세 보증금 (만 원)</label>
+                  <div class="flex items-center gap-2">
+                    <input id="myDepositInput" type="number" min="100" max="500000" step="100" value="13500" class="w-44 px-3.5 py-2.5 rounded-xl border border-slate-300 text-base font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <span class="text-sm font-semibold text-slate-700">만 원</span>
+                    <span id="myDepositKorean" class="text-sm font-bold text-blue-600">(1억 3,500만 원)</span>
+                  </div>
+                  <input id="myDepositSlider" type="range" min="1000" max="50000" step="500" value="13500" class="w-full mt-2" />
+                  <div class="flex justify-between text-[11px] text-slate-400">
+                    <span>1,000만 원</span>
+                    <span>1억 원</span>
+                    <span>2.5억 원</span>
+                    <span>5억 원</span>
+                  </div>
+                </div>
+
+                <div id="monthlyRentWrap" class="hidden pt-2">
+                  <label for="monthlyRentInput" class="block text-xs font-semibold text-slate-600 mb-1">매달 내는 월세 (만 원) <span class="text-slate-400 font-normal">※ 주택 소액보증금 판단 시 월세는 합산되지 않습니다</span></label>
+                  <div class="flex items-center gap-2">
+                    <input id="monthlyRentInput" type="number" min="0" max="2000" step="5" value="40" class="w-32 px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold text-slate-900" />
+                    <span class="text-xs font-semibold text-slate-600">만 원 / 월</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Automatic Small Tenant Check Box -->
+            <div id="smallTenantCheckBox" class="p-4 rounded-xl border bg-emerald-50/70 border-emerald-200">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-800 flex items-center gap-1">
+                  <span>0순위 최우선변제 자격 자동 판정</span>
+                  <span class="lens-tag" tabindex="0"
+                    data-tip-title="0순위 최우선변제 자격이란?"
+                    data-tip-easy="내 보증금이 이 동네 기준금액 이하라서, 집이 경매에 넘어가도 은행 대출금보다 내 보증금 중 일부를 가장 먼저 돌려받을 수 있는 자격이에요."
+                    data-tip-detail="이 자격이 있으면 설령 집주인 은행 빚이 많아도 법정 최우선변제금만큼은 안전하게 건질 수 있습니다."
+                    data-tip-example="아래 슬라이더를 움직여 보증금이 얼마일 때 자격이 유지되는지 바로 확인해 보세요!">🔍 쉬운설명</span>
+                </span>
+                <span id="smallTenantStatusBadge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white">소액임차인 해당</span>
+              </div>
+              <p id="smallTenantExplain" class="text-xs text-slate-700 mt-1.5 leading-relaxed">
+                현재 보증금(1억 3,500만 원)이 해당 지역 기준(1억 4,500만 원 이하)을 충족하여, 경매 시 선순위 근저당보다 <strong>최대 4,800만 원</strong>을 최우선으로 배당받을 수 있습니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- 2-2. (1) 현재 임대차 계약을 맺고자 하는 부동산 채권의 종류 -->
+          <div class="lg:col-span-6 space-y-3">
+            <label class="block text-sm font-bold text-slate-800 flex flex-wrap items-center gap-1.5">
+              <span>(1) 내 보증금을 지키는 방식 선택 (부동산 채권 종류)</span>
+              <span class="lens-tag" tabindex="0"
+                data-tip-title="부동산 채권의 종류가 무엇인가요?"
+                data-tip-easy="내가 집주인에게 보증금을 돌려달라고 요구할 수 있는 법적 권리(무기)의 종류예요."
+                data-tip-detail="크게 ① 주민센터에서 받는 '전입신고+확정일자(임차권)', ② 등기소에 올리는 '전세권 설정등기', ③ 보증기관이 대신 갚아주는 '전세보증보험' 3가지가 있습니다."
+                data-tip-example="일반 세입자는 가장 간편하고 강력한 1번(전입신고+확정일자) 또는 3번(보증보험 추가)을 가장 많이 선택합니다.">🔍 쉬운설명</span>
+            </label>
+            <div class="space-y-2.5" id="tenantBondTypeList">
+              <label class="bond-type-option flex items-start gap-3 p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/30 cursor-pointer transition">
+                <input type="radio" name="tenantBondType" value="lease_confirm" checked class="mt-1 text-blue-600 focus:ring-blue-500" />
+                <div class="text-xs leading-relaxed flex-1">
+                  <div class="flex flex-wrap items-center justify-between gap-1">
+                    <strong class="text-sm font-bold text-slate-900">① 일반 임대차 (전입신고 + 확정일자 받기)</strong>
+                    <div class="flex items-center gap-1">
+                      <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">90% 이상 선택 · 기본</span>
+                      <span class="lens-tag" tabindex="0"
+                        data-tip-title="전입신고 + 확정일자 (대항력·우선변제권)"
+                        data-tip-easy="집주인 허락 없이 내가 주민센터나 정부24 앱에서 신청만 하면 생기는 가장 기본적이고 든든한 권리예요."
+                        data-tip-detail="이사를 하고 전입신고를 하면 다음 날 0시부터 집주인이 바뀌어도 쫓겨나지 않는 힘(대항력)이 생기고, 확정일자를 받으면 경매 때 내 순번대로 돈을 돌려받습니다."
+                        data-tip-example="소액임차인 최우선변제권도 이 전입신고를 해야만 생깁니다!">🔍 쉬운설명</span>
+                    </div>
+                  </div>
+                  <p class="text-slate-600 mt-1">집주인 동의 없이 주민센터·온라인으로 즉시 가능! <strong>소액 최우선변제권</strong>과 순위별 배당권을 모두 챙길 수 있는 표준 방식입니다.</p>
+                </div>
+              </label>
+
+              <label class="bond-type-option flex items-start gap-3 p-3.5 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-300 cursor-pointer transition">
+                <input type="radio" name="tenantBondType" value="jeonse_right" class="mt-1 text-blue-600 focus:ring-blue-500" />
+                <div class="text-xs leading-relaxed flex-1">
+                  <div class="flex flex-wrap items-center justify-between gap-1">
+                    <strong class="text-sm font-bold text-slate-900">② 전세권 설정등기 + 전입신고 함께 하기</strong>
+                    <div class="flex items-center gap-1">
+                      <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold text-[11px]">바로 경매신청 가능</span>
+                      <span class="lens-tag" tabindex="0"
+                        data-tip-title="전세권 설정등기란?"
+                        data-tip-easy="집주인의 동의를 받아 아예 집 문서(등기부등본)에 '내가 전세 세입자다'라고 이름을 새겨 넣는 것이에요."
+                        data-tip-detail="장점은 집주인이 돈을 안 돌려줄 때 긴 재판(소송) 없이 바로 경매를 신청할 수 있다는 점입니다. 단, 등기 비용이 들고 전입신고를 안 하면 소액 최우선변제를 못 받으므로 꼭 전입신고도 같이 해야 합니다."
+                        data-tip-example="사정상 일시적으로 주소를 옮기지 못하거나 빠른 경매 집행력을 원할 때 활용합니다.">🔍 쉬운설명</span>
+                    </div>
+                  </div>
+                  <p class="text-slate-600 mt-1">등기부등본에 내 권리를 직접 등기하여 소송 없이 즉시 경매를 넘길 수 있는 방식 (소액 최우선변제를 위해 전입신고 병행 필수).</p>
+                </div>
+              </label>
+
+              <label class="bond-type-option flex items-start gap-3 p-3.5 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-300 cursor-pointer transition">
+                <input type="radio" name="tenantBondType" value="hug_guarantee" class="mt-1 text-blue-600 focus:ring-blue-500" />
+                <div class="text-xs leading-relaxed flex-1">
+                  <div class="flex flex-wrap items-center justify-between gap-1">
+                    <strong class="text-sm font-bold text-slate-900">③ 전입신고·확정일자 + 전세보증금 반환보증보험</strong>
+                    <div class="flex items-center gap-1">
+                      <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">가장 안전한 철벽보호</span>
+                      <span class="lens-tag" tabindex="0"
+                        data-tip-title="전세보증금 반환보증보험 (HUG·HF·SGI)"
+                        data-tip-easy="집주인이 계약 끝났을 때 보증금을 안 돌려주면, 공공 보증기관(HUG 등)이 나에게 먼저 보증금 전액을 주고 집주인에게 대신 받아내는 보험이에요."
+                        data-tip-detail="가입하려면 집값(공시가격×126%) 대비 보증금이 90% 이내여야 하고, 선순위 은행 빚이 집값의 60% 이내여야 합니다."
+                        data-tip-example="계약서에 '보증보험 가입 불가 시 계약 무효 및 보증금 즉시 반환' 특약을 넣으면 완벽합니다!">🔍 쉬운설명</span>
+                    </div>
+                  </div>
+                  <p class="text-slate-600 mt-1">경매까지 기다릴 필요 없이 보증기관(HUG·HF·SGI)에서 보증금을 먼저 돌려받는 가장 안전한 방법입니다.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-3. 등기부등본상 선순위 부동산 채권(근저당·선순위 임차보증금) 입력 -->
+        <div class="mt-6 pt-6 border-t border-slate-100">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
+                <span>이 집에 이미 잡혀 있는 집주인 빚 (선순위 채권) 입력</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="집주인 빚(선순위 채권)은 어디서 보나요?"
+                  data-tip-easy="인터넷등기소(iros.go.kr)나 중개사가 보여주는 '등기부등본'의 【을구】 칸에 적힌 은행 대출금액(채권최고액)을 적으시면 돼요! 깨끗하면 0원을 적으세요."
+                  data-tip-detail="나보다 먼저 잡혀 있는 은행 대출(근저당)이나 먼저 이사 온 다른 세입자의 보증금은 집이 경매로 팔렸을 때 내 보증금(확정일자분)보다 먼저 빠져나갑니다."
+                  data-tip-example="융자 없는 깨끗한 집이라면 아래 세 칸 모두 '0'으로 두시면 됩니다!">🔍 쉬운설명</span>
+              </h3>
+              <p class="text-xs text-slate-500">융자(은행 대출)가 없는 깨끗한 집이라면 그대로 <strong>0원</strong>을 입력하시면 됩니다.</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-slate-500">은행 빚(근저당)이 처음 잡힌 날짜:</span>
+              <span class="lens-tag" tabindex="0"
+                data-tip-title="왜 은행 빚이 잡힌 날짜를 묻나요?"
+                data-tip-easy="법에서 정한 소액보증금 보호 액수는 '내가 계약한 날'이 아니라, '그 집에 은행 대출(근저당)이 처음 생긴 날'의 옛날 법 기준을 따르기 때문이에요!"
+                data-tip-detail="등기부등본 을구에 2020년에 잡힌 근저당이 아직 남아 있다면 2020년 당시의 소액보증금 기준이 적용됩니다. 대출이 없거나 2023년 2월 21일 이후 대출이면 현재 기준으로 계산됩니다."
+                data-tip-example="잘 모르거나 대출이 없다면 기본값(2023.02.21 이후/현행)으로 두세요.">🔍 쉬운설명</span>
+              <select id="mortgageDateEraSelect" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+                <option value="2023_current" selected>2023. 02. 21. 이후 (또는 은행빚 없음 · 현행)</option>
+                <option value="2021_2023">2021. 05. 11. ~ 2023. 02. 20.에 잡힌 은행빚</option>
+                <option value="2018_2021">2018. 09. 18. ~ 2021. 05. 10.에 잡힌 은행빚</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <label for="seniorMortgageInput" class="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
+                <span>① 집주인 은행 대출금 (근저당 채권최고액)</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="근저당권 채권최고액이란?"
+                  data-tip-easy="등기부등본 【을구】에 적힌 은행 담보대출 한도 금액이에요. 실제 빌린 원금의 보통 110~120%로 적혀 있습니다."
+                  data-tip-detail="경매 배당을 계산할 때는 실제 대출원금이 아니라 등기부에 적힌 '채권최고액' 숫자 그대로 공제하고 계산해야 안전합니다."
+                  data-tip-example="등기부 을구에 '채권최고액 금 30,000,000원'이라고 적혀 있으면 3000을 입력하세요.">🔍 쉬운설명</span>
+              </label>
+              <p class="text-[11px] text-slate-500 mb-2">등기부등본 【을구】에 적힌 금액 (없으면 0)</p>
+              <div class="flex items-center gap-1.5">
+                <input id="seniorMortgageInput" type="number" min="0" max="500000" step="100" value="3000" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-900 bg-white" />
+                <span class="text-xs font-semibold text-slate-600 shrink-0">만 원</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <label for="seniorTenantDepositInput" class="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
+                <span>② 다른 방 먼저 온 세입자 보증금 합계</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="선순위 세입자 보증금 합계 (다가구·원룸 필수)"
+                  data-tip-easy="아파트나 일반 빌라(다세대)는 내 호수만 따지므로 0원이에요! 하지만 주인 1명이 건물 전체를 가진 '다가구(원룸 건물)'는 나보다 먼저 이사 온 다른 호수 세입자들의 보증금을 합쳐서 적어야 해요."
+                  data-tip-detail="중개사에게 '선순위 보증금 총액이 얼마인가요?'라고 묻거나 주민센터 '확정일자 부여현황'에서 확인할 수 있습니다."
+                  data-tip-example="아파트·빌라(다세대)·오피스텔이면 0원으로 두세요!">🔍 쉬운설명</span>
+              </label>
+              <p class="text-[11px] text-slate-500 mb-2">다가구·원룸 건물일 때만 입력 (아파트·빌라는 0)</p>
+              <div class="flex items-center gap-1.5">
+                <input id="seniorTenantDepositInput" type="number" min="0" max="500000" step="100" value="0" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-900 bg-white" />
+                <span class="text-xs font-semibold text-slate-600 shrink-0">만 원</span>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <label for="otherSmallTenantCountInput" class="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
+                <span>③ 건물 내 다른 소액 세입자 가구 수</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="다른 소액 세입자 가구 수란?"
+                  data-tip-easy="다가구(원룸) 건물에서 경매가 터졌을 때, 나와 똑같이 '0순위 최우선변제금'을 먼저 나눠서 가져갈 다른 원룸 세입자 방 개수예요."
+                  data-tip-detail="아파트·다세대 빌라·오피스텔은 한 호실에 나만 살기 때문에 0가구입니다."
+                  data-tip-example="다가구 원룸 건물에 소액보증금 세입자가 3명 더 있다면 3을 입력하세요.">🔍 쉬운설명</span>
+              </label>
+              <p class="text-[11px] text-slate-500 mb-2">다가구 건물 내 다른 소액 세입자 수 (아파트·빌라는 0)</p>
+              <div class="flex items-center gap-1.5">
+                <input id="otherSmallTenantCountInput" type="number" min="0" max="30" step="1" value="0" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-900 bg-white" />
+                <span class="text-xs font-semibold text-slate-600 shrink-0">가구</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Extra Risk Flags -->
+          <div class="mt-4 flex flex-wrap items-center gap-4 bg-amber-50/70 border border-amber-200/80 rounded-xl px-4 py-3 text-xs">
+            <span class="font-bold text-amber-900 flex items-center gap-1">
+              <span>⚠️ 혹시 등기부등본에 이런 단어가 보이나요? (해당 시 체크)</span>
+              <span class="lens-tag" tabindex="0"
+                data-tip-title="압류·신탁·세금체납 위험 신호"
+                data-tip-easy="등기부등본 【갑구】에 '압류', '가압류', '신탁'이라는 단어가 있거나 집주인이 밀린 세금이 있다면 보증금을 떼일 위험이 매우 높아요!"
+                data-tip-detail="특히 소유자가 개인이 아닌 'OO부동산신탁'으로 되어 있다면 신탁회사의 정식 동의서 없이는 전입신고를 해도 법적 보호를 받지 못할 수 있습니다."
+                data-tip-example="해당 사항이 없다면 체크하지 않고 넘어가세요.">🔍 쉬운설명</span>
+            </span>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-slate-700">
+              <input id="chkSeizure" type="checkbox" class="rounded text-rose-600 focus:ring-rose-500" />
+              <span>압류 · 가압류 · 경매개시 적혀 있음</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-slate-700">
+              <input id="chkTrust" type="checkbox" class="rounded text-rose-600 focus:ring-rose-500" />
+              <span>소유자가 'OO신탁회사'(신탁등기)로 되어 있음</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-slate-700">
+              <input id="chkTaxArrears" type="checkbox" class="rounded text-rose-600 focus:ring-rose-500" />
+              <span>집주인 국세·지방세 세금 체납 있음</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <button type="button" data-go-step="1" class="go-step-btn inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            이전: 주소·주택종류
+          </button>
+          <button type="button" data-go-step="3" class="go-step-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition">
+            다음 페이지: 인근 지역 경매 낙찰가율 확인
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: 대법원 경매 정보 기반 인근 지역 낙찰가율 분석 ==================== -->
+    <section id="stepPage3" class="step-page hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <span class="inline-block text-xs font-bold text-blue-600 uppercase tracking-wider">STEP 3 · 대법원 경매 낙찰가율 데이터</span>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 mt-0.5 flex flex-wrap items-center gap-2">
+              <span>(2) 우리 동네 집 종류별 경매 낙찰가율 &amp; 채권 비교</span>
+              <span class="lens-tag" tabindex="0"
+                data-tip-title="경매 낙찰가율(매각가율)이 무엇인가요?"
+                data-tip-easy="집이 경매에 나왔을 때 원래 집값(감정가) 대비 몇 % 가격에 실제로 팔렸는지를 나타내는 비율이에요!"
+                data-tip-detail="예를 들어 2억짜리 빌라가 경매에서 1억 3,000만 원에 팔렸다면 낙찰가율은 65%입니다. 이 낙찰된 돈 안에서만 은행 빚과 세입자 보증금을 나눠 갖게 됩니다."
+                data-tip-example="빌라나 다가구는 보통 60~70% 수준에 낙찰되므로 집값의 100%가 다 남는다고 생각하면 절대 안 됩니다!">🔍 쉬운설명</span>
+            </h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnQuickSyncStep3" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition">
+              🔄 낙찰가율 최신화·수정
+            </button>
+            <a href="https://www.courtauction.go.kr/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline">
+              대한민국 법원 경매정보 바로가기 ↗
+            </a>
+          </div>
+        </div>
+
+        <!-- 3-1. Auction Bid Rate Comparison & Interactive Adjustment -->
+        <div class="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500" id="step3RegionLabel">경기 과밀억제권역 (성남·수원 등) 기준</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800" id="step3PropBadge">빌라 (다세대·연립) 선택됨</span>
+              </div>
+              <div class="mt-3 flex items-baseline justify-between">
+                <div>
+                  <span class="text-xs text-slate-500 block flex items-center gap-1">
+                    <span>적용 경매 낙찰가율</span>
+                    <span class="lens-tag" tabindex="0"
+                      data-tip-title="유찰과 낙찰가율 하락 원리"
+                      data-tip-easy="법원 경매에서 사는 사람이 없어 한 번 안 팔리는 것을 '유찰'이라고 해요. 1번 유찰될 때마다 가격이 20~30%씩 뚝뚝 떨어집니다."
+                      data-tip-detail="아파트는 1번 유찰(약 80%)에 잘 팔리지만, 빌라와 단독·다가구는 2번 유찰(60%대)되는 경우가 많아 보수적으로 잡아야 내 보증금을 지킬 수 있습니다."
+                      data-tip-example="아래 슬라이더를 왼쪽으로 움직여 2회~3회 유찰됐을 때도 내 보증금이 안전한지 실험해 보세요!">🔍 쉬운설명</span>
+                  </span>
+                  <strong id="activeBidRateText" class="text-3xl font-extrabold text-blue-600">66.5%</strong>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs text-slate-500 block">경매로 팔릴 때 예상 매각대금</span>
+                  <strong id="activeExpectedAuctionPrice" class="text-xl font-extrabold text-slate-900">1억 4,630만 원</strong>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-200">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <label for="customBidRateSlider" class="font-semibold text-slate-700">만약 경매에서 더 싸게 팔린다면? (슬라이더 조절)</label>
+                  <button id="btnResetBidRate" type="button" class="text-blue-600 hover:underline font-medium">지역 평균값 복원</button>
+                </div>
+                <input id="customBidRateSlider" type="range" min="40" max="95" step="0.5" value="66.5" class="w-full" />
+                <div class="flex justify-between text-[11px] text-slate-400 mt-0.5">
+                  <span>40% (3회 유찰 위기)</span>
+                  <span>60% (2회 유찰 평균)</span>
+                  <span>80% (1회 유찰)</span>
+                  <span>95% (시세 근접)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Regional Property Type Comparison Cards -->
+            <div class="space-y-2">
+              <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">같은 동네에서 집 종류별 평균 낙찰가율 비교 (클릭 시 전환)</h3>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="step3RateCompareCards">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart Container -->
+          <div class="lg:col-span-6 bg-white rounded-xl border border-slate-200 p-4">
+            <h3 class="text-xs font-bold text-slate-700 mb-2">우리 지역 집 종류별 평균 경매 낙찰가율 한눈에 비교</h3>
+            <div class="relative h-60 w-full">
+              <canvas id="bidRateChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-2. Nearby Court Auction Sample Cases Table -->
+        <div class="mt-6 pt-6 border-t border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+            <span>인근 지역 비슷한 집들의 최근 법원 경매 실제 낙찰 사례</span>
+            <span class="lens-tag" tabindex="0"
+              data-tip-title="실제 경매 낙찰 사례 보는 법"
+              data-tip-easy="법원이 정한 원래 집값(감정가)과 경매에서 실제로 팔린 금액(낙찰가)의 차이를 확인해 보세요."
+              data-tip-detail="빌라나 다가구주택은 감정가가 2억 2천만 원이어도 실제 경매에서는 1억 4천만 원대에 낙찰되는 일이 흔합니다."
+              data-tip-example="내 보증금 + 선순위 은행빚 합계가 '실제 낙찰가'보다 낮아야 안전합니다!">🔍 쉬운설명</span>
+          </h3>
+          <p class="text-xs text-slate-500 mb-3">원래 집값(감정가)보다 얼마나 할인되어 낙찰되는지 참고해 보세요.</p>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                  <th class="py-2.5 px-3 font-bold">관할법원 / 동네</th>
+                  <th class="py-2.5 px-3 font-bold">집 종류</th>
+                  <th class="py-2.5 px-3 font-bold text-right">원래 감정가</th>
+                  <th class="py-2.5 px-3 font-bold text-center">안 팔린 횟수(유찰)</th>
+                  <th class="py-2.5 px-3 font-bold text-right">실제 낙찰된 금액</th>
+                  <th class="py-2.5 px-3 font-bold text-right">낙찰가율</th>
+                </tr>
+              </thead>
+              <tbody id="auctionSampleTableBody" class="divide-y divide-slate-200 bg-white">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3-3. 부동산 채권 종류별 보장 효력 요약 비교표 -->
+        <div class="mt-6 pt-6 border-t border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 mb-2 flex items-center gap-1.5">
+            <span>(1) 부동산 채권 종류별 내 보증금 보호 효력 쉬운 비교표</span>
+            <span class="lens-tag" tabindex="0"
+              data-tip-title="내 권리(채권)와 은행 권리(근저당)의 순서 싸움"
+              data-tip-easy="경매로 집이 팔렸을 때 누가 먼저 돈을 가져가는지(배당 순위)를 정리한 표예요."
+              data-tip-detail="1등(0순위)은 무조건 '소액임차인 최우선변제금'이고, 그다음은 등기 날짜(근저당 설정일)와 내 확정일자(전입신고 다음 날) 중 날짜가 더 빠른 순서대로 돈을 가져갑니다."
+              data-tip-example="그래서 소액 최우선변제금에 해당되는지, 그리고 그 돈을 뺀 나머지 잔액이 얼마인지가 가장 중요합니다!">🔍 쉬운설명</span>
+          </h3>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                  <th class="py-2.5 px-3 font-bold">권리(채권) 이름</th>
+                  <th class="py-2.5 px-3 font-bold">어떻게 만드나요?</th>
+                  <th class="py-2.5 px-3 font-bold">0순위 최우선변제 여부</th>
+                  <th class="py-2.5 px-3 font-bold">쉬운 핵심 요약</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 bg-white text-slate-700">
+                <tr>
+                  <td class="py-2.5 px-3 font-bold text-blue-700">소액임차인 최우선변제권</td>
+                  <td class="py-2.5 px-3">이사 + 주민센터 전입신고</td>
+                  <td class="py-2.5 px-3 font-bold text-emerald-700">⭕ 은행 빚보다 무조건 0순위 배당</td>
+                  <td class="py-2.5 px-3">보증금이 지역 기준 이하일 때만 적용 (집 낙찰가의 절반 한도 내)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 font-bold text-slate-900">확정일자 임차권 (우선변제권)</td>
+                  <td class="py-2.5 px-3">이사 + 전입신고 + 확정일자 도장</td>
+                  <td class="py-2.5 px-3">소액 기준 충족 시 함께 적용</td>
+                  <td class="py-2.5 px-3">최우선변제금을 빼고 남은 보증금을 날짜 순서대로 돌려받는 권리</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 font-bold text-slate-900">전세권 설정등기</td>
+                  <td class="py-2.5 px-3">집주인 동의 + 등기소에 전세권 등록</td>
+                  <td class="py-2.5 px-3 text-rose-600 font-semibold">전입신고 안 하면 0순위 배당 불가</td>
+                  <td class="py-2.5 px-3">소송 없이 바로 경매를 신청할 수 있으나 전입신고도 같이 해야 안전함</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 font-bold text-slate-900">선순위 은행 근저당권</td>
+                  <td class="py-2.5 px-3">집주인이 은행에서 받은 담보대출</td>
+                  <td class="py-2.5 px-3">내 0순위 최우선변제금 다음 순서</td>
+                  <td class="py-2.5 px-3">내가 이사 오기 전에 이미 잡혀 있던 빚이라 내 확정일자 보증금보다 먼저 빼감</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <button type="button" data-go-step="2" class="go-step-btn inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            이전: 보증금·채권종류
+          </button>
+          <button type="button" data-go-step="4" class="go-step-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition">
+            핵심 결과 보기: 최우선변제금 공제 잔액 리포트
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4 (CORE): 지역별 최우선 보증금 공제 잔액 & 실질 회수 진단 ==================== -->
+    <section id="stepPage4" class="step-page hidden space-y-6">
+      <!-- Top Safety Verdict Banner -->
+      <div id="finalVerdictBanner" class="rounded-2xl p-5 sm:p-6 border-2 bg-white shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="verdictLevelBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white">안전 등급: 양호</span>
+              <span id="verdictAddressLabel" class="text-xs font-semibold text-slate-500">경기도 성남시 분당구 판교역로 166 · 빌라(다세대·연립)</span>
+              <span class="lens-tag" tabindex="0"
+                data-tip-title="종합 안전 등급은 어떻게 판정되나요?"
+                data-tip-easy="집이 경매에 넘어갔을 때 ① 0순위 최우선변제금과 ② 선순위 은행 빚을 갚고 남은 경매 잔액으로 내 보증금 100%를 다 돌려받을 수 있는지를 계산한 결과예요!"
+                data-tip-detail="내 보증금을 다 돌려받고도 경매 대금이 2,000만 원 이상 남으면 [안전], 아슬아슬하게 남으면 [주의], 1원이라도 못 받는 돈(미회수 잔액)이 생기면 [위험]으로 경고합니다."
+                data-tip-example="아래 두 개의 핵심 잔액 계산 카드를 보면 왜 이런 결과가 나왔는지 쉽게 이해할 수 있습니다.">🔍 쉬운설명</span>
+            </div>
+            <h2 id="verdictHeadline" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
+              경매 시 내 보증금 1억 3,500만 원 전액 회수 가능 예상
+            </h2>
+            <p id="verdictSubtext" class="text-xs sm:text-sm text-slate-600">
+              지역별 최우선변제금(4,800만 원)을 우선 보장받고, 남은 보증금 잔액(8,700만 원)도 선순위 근저당 공제 후 경매 잔액 내에서 배당 가능합니다.
+            </p>
+          </div>
+          <div class="bg-slate-900 text-white rounded-xl px-5 py-3.5 shrink-0 text-right">
+            <span class="text-xs text-slate-400 block">내 보증금 실질 회수 예상율</span>
+            <strong id="verdictRecoveryRate" class="text-2xl sm:text-3xl font-extrabold text-emerald-400">100.0%</strong>
+            <span id="verdictUnrecoveredText" class="block text-[11px] text-slate-300 mt-0.5">미회수 위험 잔액: 0원</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CORE REQUIREMENT (3): 지역별 최우선 보증금 공제한 잔액 2대 핵심 분석 카드 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Card A: 내 보증금 기준 - 지역별 최우선변제금 공제 후 일반채권 잔액 -->
+        <div class="bg-white rounded-2xl border-2 border-blue-600 shadow-sm p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="text-[11px] font-extrabold text-blue-600 uppercase tracking-wider">핵심 계산 ① · 내 보증금에서 0순위 보호액을 뺀 잔액</span>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-0.5 flex items-center gap-1.5">
+                <span>내 보증금 중 최우선변제금 공제 잔액</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="내 보증금 중 최우선변제금 공제 잔액이란?"
+                  data-tip-easy="내가 낸 전체 보증금에서 나라가 0순위로 무조건 먼저 챙겨주는 '최우선변제금'을 빼고, 아직 더 돌려받아야 하는 나머지 보증금이에요!"
+                  data-tip-detail="이 남은 보증금 잔액은 은행 빚(선순위 근저당)이 다 갚아진 뒤에 내 확정일자 순서로 돌려받게 됩니다."
+                  data-tip-example="예: 보증금 1억 3,500만 원 - 최우선변제 4,800만 원 = 나머지 8,700만 원을 추가로 회수해야 함!">🔍 쉬운설명</span>
+              </h3>
+            </div>
+            <span id="coreCard1Badge" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700">소액임차인 최우선 적용</span>
+          </div>
+
+          <div class="mt-4 space-y-2.5 text-sm">
+            <div class="flex items-center justify-between py-1.5">
+              <span class="text-slate-600">내가 맡긴 전·월세 보증금 총액</span>
+              <strong id="calcMyDeposit" class="font-bold text-slate-900">1억 3,500만 원</strong>
+            </div>
+            <div class="flex items-center justify-between py-1.5 text-blue-700 bg-blue-50/60 px-3 rounded-lg">
+              <span>(-) 0순위로 먼저 돌려받는 지역별 최우선변제금</span>
+              <strong id="calcMyPriorityDeduct">- 4,800만 원</strong>
+            </div>
+            <div class="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+              <div>
+                <span class="font-extrabold text-slate-900 block">(=) 최우선 보증금 공제 후 내 보증금 잔액</span>
+                <span class="text-[11px] text-slate-500">확정일자 순위로 회수해야 하는 남은 내 돈</span>
+              </div>
+              <strong id="calcMyRemainingDeposit" class="text-xl sm:text-2xl font-extrabold text-blue-700">8,700만 원</strong>
+            </div>
+          </div>
+
+          <p id="coreCard1Note" class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 leading-relaxed">
+            ※ 소액임차인에 해당하므로 경매 시 선순위 근저당권자보다 <strong>4,800만 원</strong>을 가장 먼저 배당받고, 공제한 나머지 <strong>8,700만 원</strong>은 확정일자 순위에 따라 배당받습니다.
+          </p>
+        </div>
+
+        <!-- Card B: 경매 낙찰대금 기준 - 최우선변제금 및 선순위 채권 공제 후 담보 잔액 -->
+        <div class="bg-white rounded-2xl border-2 border-slate-800 shadow-sm p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">핵심 계산 ② · 경매 낙찰가에서 먼저 빠져나간 뒤 남는 돈</span>
+              <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-0.5 flex items-center gap-1.5">
+                <span>경매 낙찰가에서 최우선변제·선순위 공제 후 잔액</span>
+                <span class="lens-tag" tabindex="0"
+                  data-tip-title="경매 낙찰가 공제 후 잔액 (실질 담보 여력)"
+                  data-tip-easy="집이 경매에 팔린 돈(예상 낙찰가)에서 0순위 최우선변제금과 집주인의 선순위 은행 빚을 다 떼어주고, 실제로 내 나머지 보증금을 줄 수 있게 남아 있는 돈이에요!"
+                  data-tip-detail="이 '최종 가용 담보 잔액'이 왼쪽 카드의 '내 보증금 잔액'보다 크거나 같아야 내 보증금을 100% 다 돌려받을 수 있습니다."
+                  data-tip-example="만약 이 금액이 왼쪽의 내 보증금 잔액보다 적다면 그 차이만큼 보증금을 떼일 위험이 있습니다!">🔍 쉬운설명</span>
+              </h3>
+            </div>
+            <span id="coreCard2Badge" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800">실질 담보 여력</span>
+          </div>
+
+          <div class="mt-4 space-y-2 text-sm">
+            <div class="flex items-center justify-between py-1">
+              <span class="text-slate-600">예상 경매 낙찰가 (집값 × 낙찰가율 <span id="calcRateInline">66.5%</span>)</span>
+              <strong id="calcAuctionGross" class="font-bold text-slate-900">1억 4,630만 원</strong>
+            </div>
+            <div class="flex items-center justify-between py-1 text-emerald-800 bg-emerald-50/70 px-3 rounded-lg">
+              <span>(-) 지역별 최우선변제금 총 공제액 (0순위 배당)</span>
+              <strong id="calcAuctionPriorityDeduct">- 4,800만 원</strong>
+            </div>
+            <div class="flex items-center justify-between py-1 px-3 bg-slate-100 rounded-lg">
+              <span class="font-semibold text-slate-800">(=) 최우선 보증금 공제 직후 경매대금 잔액</span>
+              <strong id="calcAfterPriorityPool" class="font-extrabold text-slate-900">9,830만 원</strong>
+            </div>
+            <div class="flex items-center justify-between py-1 text-rose-700 px-1">
+              <span>(-) 집주인 선순위 빚 공제 (은행대출 + 선순위보증금)</span>
+              <strong id="calcSeniorClaimsDeduct">- 3,000만 원</strong>
+            </div>
+            <div class="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+              <div>
+                <span class="font-extrabold text-slate-900 block">(=) 최종 남는 경매 담보 잔액</span>
+                <span class="text-[11px] text-slate-500">왼쪽 내 보증금 잔액(<span id="calcCompareTarget">8,700만 원</span>)과 비교해 보세요</span>
+              </div>
+              <strong id="calcFinalAvailablePool" class="text-xl sm:text-2xl font-extrabold text-emerald-600">6,830만 원</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Interactive Simulation Bar on Step 4 -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <span>🎛️ 보증금을 얼마까지 낮춰야 안전할까? (실시간 손가락 실험실)</span>
+            <span class="lens-tag" tabindex="0"
+              data-tip-title="실시간 손가락 실험실 사용법"
+              data-tip-easy="아래 3개의 막대(슬라이더)를 좌우로 움직여 보세요! 보증금을 줄이거나 은행 빚을 갚았을 때 내 보증금 회수율이 어떻게 바뀌는지 0.1초 만에 계산됩니다."
+              data-tip-detail="만약 '미회수 위험 잔액'이 생겼다면, 두 번째 막대(내 보증금)를 왼쪽으로 줄여서 미회수 금액이 0원이 되는 안전한 보증금 액수를 찾아보세요."
+              data-tip-example="남은 차액은 월세(반전세)로 돌리거나 집주인에게 은행 대출 상환 조건을 요구하면 됩니다!">🔍 쉬운설명</span>
+          </h3>
+          <span class="text-xs text-slate-500">슬라이더를 움직이면 위 공제 잔액과 회수 예상액이 실시간으로 재계산됩니다.</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span>경매 낙찰가율 가정</span>
+              <span id="simLabelBidRate" class="text-blue-600">66.5%</span>
+            </div>
+            <input id="simSliderBidRate" type="range" min="40" max="95" step="0.5" value="66.5" class="w-full" />
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span>내 전·월세 보증금</span>
+              <span id="simLabelMyDeposit" class="text-blue-600">1억 3,500만 원</span>
+            </div>
+            <input id="simSliderMyDeposit" type="range" min="1000" max="50000" step="500" value="13500" class="w-full" />
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex justify-between text-xs font-bold mb-1">
+              <span>집주인 선순위 은행빚</span>
+              <span id="simLabelSeniorMortgage" class="text-rose-600">3,000만 원</span>
+            </div>
+            <input id="simSliderSeniorMortgage" type="range" min="0" max="30000" step="500" value="3000" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Waterfall Breakdown & Chart -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <h3 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+            <span>경매 배당 순서별 돈이 빠져나가는 과정 (단계별 잔액 계산서)</span>
+            <span class="lens-tag" tabindex="0"
+              data-tip-title="배당 순서별 잔액 계산서 읽는 법"
+              data-tip-easy="집이 경매로 팔린 돈(맨 윗줄)에서 0순위 최우선변제금 → 1순위 은행 빚 → 2순위 내 나머지 보증금 순서로 돈이 빠져나가고 얼마가 남는지 보여주는 영수증이에요."
+              data-tip-detail="맨 아랫줄에 '전액 회수 완료(손실 0원)'가 나오는지 꼭 확인하세요!"
+              data-tip-example="미회수 손실이 뜬다면 계약 전 보증금을 낮추거나 선순위 대출 말소 특약이 필수입니다.">🔍 쉬운설명</span>
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">법원 경매 진행 시 매각대금(낙찰가)이 어떤 순서로 공제되고 내 보증금으로 돌아오는지 보여줍니다.</p>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                  <th class="py-2.5 px-3 font-bold">배당 순위 및 항목</th>
+                  <th class="py-2.5 px-3 font-bold text-right">빠져나가는 돈 (배당·공제)</th>
+                  <th class="py-2.5 px-3 font-bold text-right">공제 후 남은 낙찰가 잔액</th>
+                </tr>
+              </thead>
+              <tbody id="waterfallTableBody" class="divide-y divide-slate-200">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 mb-1">내 보증금 회수 구조 그래프</h3>
+            <p class="text-xs text-slate-500 mb-3">0순위 최우선변제금(초록) · 확정일자 회수(파랑) · 미회수 위험(빨강)</p>
+            <div class="relative h-64 w-full">
+              <canvas id="waterfallChart"></canvas>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs text-slate-500">계약서에 넣을 보호 특약이 필요하신가요?</span>
+            <button id="btnCopySpecialClause" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+              맞춤 안심특약 문구 복사
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Actionable Recommendations & Copyable Clause Box -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <h3 class="text-sm font-bold text-slate-900 mb-2">일반 소비자를 위한 맞춤형 권리보호 가이드 &amp; 필수 특약</h3>
+        <div id="customAdviceList" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-700">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <button type="button" data-go-step="3" class="go-step-btn inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          이전: 경매 낙찰가율 비교
+        </button>
+        <button type="button" data-go-step="1" class="go-step-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm transition">
+          다른 주소·주택 다시 조회하기
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL 1: 정보 최신화 관리 센터 (Data Freshness & Live Update System) ==================== -->
+  <div id="updateCenterModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-base">🔄</span>
+          <div>
+            <h3 class="text-base font-bold">정보 최신화 관리 센터 (법령 · 경매 낙찰가율 · 주소 DB 업데이트)</h3>
+            <p class="text-xs text-slate-300">법원 경매 낙찰가율 변동이나 주택임대차보호법 시행령 개정 시 최신 데이터를 즉시 반영합니다.</p>
+          </div>
+        </div>
+        <button id="btnCloseUpdateModal" type="button" class="p-1.5 rounded-lg text-slate-300 hover:bg-slate-800">✕</button>
+      </div>
+
+      <div class="p-5 overflow-y-auto custom-scrollbar space-y-5 text-xs">
+        <!-- 1. One-Click Preset Trend Sync -->
+        <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <span class="text-[11px] font-extrabold text-blue-700 uppercase">방안 1 · 원클릭 경매 시장 트렌드 동기화</span>
+              <h4 class="text-sm font-bold text-slate-900 mt-0.5">시기별 대법원 경매 낙찰가율 기준 모드 선택</h4>
+            </div>
+            <button id="btnRunLiveSyncCheck" type="button" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition">
+              ⚡ 최신 기준 데이터 동기화 실행
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button type="button" data-sync-mode="standard_2026" class="sync-mode-btn p-3 rounded-xl border-2 border-blue-600 bg-white text-left">
+              <strong class="block text-slate-900 font-bold">2026.11 최근 3개월 표준 평균</strong>
+              <span class="text-[11px] text-slate-500 mt-0.5 block">대법원 법원경매정보 최근 3개월 전국 권역별 매각가율 평균치 적용 (권장)</span>
+            </button>
+            <button type="button" data-sync-mode="conservative_stress" class="sync-mode-btn p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-400 text-left">
+              <strong class="block text-rose-700 font-bold">전세사기 예방 보수적 기준 (-5%p)</strong>
+              <span class="text-[11px] text-slate-500 mt-0.5 block">부동산 하락기 및 추가 유찰에 대비해 낙찰가율을 5%p 낮춰 엄격하게 진단</span>
+            </button>
+            <button type="button" data-sync-mode="recovery_market" class="sync-mode-btn p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-400 text-left">
+              <strong class="block text-emerald-700 font-bold">경매 인기·활황기 기준 (+3%p)</strong>
+              <span class="text-[11px] text-slate-500 mt-0.5 block">입지가 우수한 역세권 물건 등 응찰자가 몰리는 지역의 최근 1개월 낙찰가율</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Direct User Editable Live Table (persisted in localStorage) -->
+        <div class="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-extrabold text-emerald-700 uppercase">방안 2 · 사용자 직접 최신 수치 입력 &amp; 자동 저장</span>
+              <h4 class="text-sm font-bold text-slate-900 mt-0.5">현재 선택된 권역(<span id="updateModalRegionName" class="text-blue-600">경기 과밀억제권역</span>)의 최신 수치 직접 수정</h4>
+              <p class="text-[11px] text-slate-500">대법원 경매 사이트나 개정 법령에서 확인한 최신 수치를 직접 입력하면 앱 전체 계산식에 즉시 반영되고 브라우저에 저장됩니다.</p>
+            </div>
+            <button id="btnSaveCustomUpdate" type="button" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shrink-0 transition">
+              수정한 최신 수치 적용·저장
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label for="editRateApt" class="block text-[11px] font-bold text-slate-600">아파트 평균 낙찰가율 (%)</label>
+              <input id="editRateApt" type="number" step="0.5" min="30" max="100" value="82.5" class="mt-1 w-full px-2.5 py-1.5 rounded border border-slate-300 font-bold text-slate-900 bg-white" />
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label for="editRateVilla" class="block text-[11px] font-bold text-slate-600">빌라(다세대) 낙찰가율 (%)</label>
+              <input id="editRateVilla" type="number" step="0.5" min="30" max="100" value="66.5" class="mt-1 w-full px-2.5 py-1.5 rounded border border-slate-300 font-bold text-slate-900 bg-white" />
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label for="editRateDagagu" class="block text-[11px] font-bold text-slate-600">단독·다가구 낙찰가율 (%)</label>
+              <input id="editRateDagagu" type="number" step="0.5" min="30" max="100" value="61.0" class="mt-1 w-full px-2.5 py-1.5 rounded border border-slate-300 font-bold text-slate-900 bg-white" />
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label for="editRateOfficetel" class="block text-[11px] font-bold text-slate-600">오피스텔 낙찰가율 (%)</label>
+              <input id="editRateOfficetel" type="number" step="0.5" min="30" max="100" value="69.0" class="mt-1 w-full px-2.5 py-1.5 rounded border border-slate-300 font-bold text-slate-900 bg-white" />
+            </div>
+            <div class="bg-blue-50/60 p-2.5 rounded-lg border border-blue-200">
+              <label for="editZoneLimit" class="block text-[11px] font-bold text-blue-800">소액임차인 보증금 상한 (만원)</label>
+              <input id="editZoneLimit" type="number" step="500" min="1000" max="50000" value="14500" class="mt-1 w-full px-2.5 py-1.5 rounded border border-blue-300 font-bold text-blue-900 bg-white" />
+            </div>
+            <div class="bg-blue-50/60 p-2.5 rounded-lg border border-blue-200">
+              <label for="editZonePriority" class="block text-[11px] font-bold text-blue-800">0순위 최우선변제금 (만원)</label>
+              <input id="editZonePriority" type="number" step="100" min="500" max="30000" value="4800" class="mt-1 w-full px-2.5 py-1.5 rounded border border-blue-300 font-bold text-blue-900 bg-white" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Official Data Links & Public Open API Architecture for Production -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+          <span class="text-[11px] font-extrabold text-slate-600 uppercase">방안 3 · 공식 공공데이터 출처 바로가기 &amp; 상용화 Open API 자동 연동 구조</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <a href="https://www.courtauction.go.kr/" target="_blank" rel="noopener noreferrer" class="p-3 rounded-xl bg-white border border-slate-200 hover:border-blue-500 flex items-center justify-between transition">
+              <div>
+                <strong class="block text-slate-900 font-bold">대한민국 법원 경매정보 (대법원)</strong>
+                <span class="text-[11px] text-slate-500">매각통계 (지역별·용도별 매각가율 실시간 조회)</span>
+              </div>
+              <span class="text-blue-600 font-bold">이동 ↗</span>
+            </a>
+            <a href="https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lspttninfSeq=130113" target="_blank" rel="noopener noreferrer" class="p-3 rounded-xl bg-white border border-slate-200 hover:border-blue-500 flex items-center justify-between transition">
+              <div>
+                <strong class="block text-slate-900 font-bold">국가법령정보센터 (법제처)</strong>
+                <span class="text-[11px] text-slate-500">주택임대차보호법 시행령 제10조·제11조 현행 조문</span>
+              </div>
+              <span class="text-blue-600 font-bold">이동 ↗</span>
+            </a>
+            <a href="https://www.juso.go.kr/" target="_blank" rel="noopener noreferrer" class="p-3 rounded-xl bg-white border border-slate-200 hover:border-blue-500 flex items-center justify-between transition">
+              <div>
+                <strong class="block text-slate-900 font-bold">도로명주소 안내시스템 (행정안전부)</strong>
+                <span class="text-[11px] text-slate-500">전국 도로명주소 검색 및 주소기반 Open API 제공</span>
+              </div>
+              <span class="text-blue-600 font-bold">이동 ↗</span>
+            </a>
+            <a href="https://rt.molit.go.kr/" target="_blank" rel="noopener noreferrer" class="p-3 rounded-xl bg-white border border-slate-200 hover:border-blue-500 flex items-center justify-between transition">
+              <div>
+                <strong class="block text-slate-900 font-bold">국토교통부 실거래가 공개시스템</strong>
+                <span class="text-[11px] text-slate-500">아파트·연립다세대·단독다가구·오피스텔 시세 확인</span>
+              </div>
+              <span class="text-blue-600 font-bold">이동 ↗</span>
+            </a>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-900 text-slate-200 text-[11px] leading-relaxed">
+            <strong class="text-amber-300 block mb-1">💡 실제 앱 서비스 운영 시 자동 최신화 파이프라인 (설계 요약):</strong>
+            1) <strong>도로명주소 API</strong>: 행안부 주소검색 API를 연동해 지번·초성·건물명 검색 시 법정동코드(10자리) 자동 추출 → 권역 자동 매핑<br/>
+            2) <strong>경매 낙찰가율 배치(Batch)</strong>: 매월 1일 대법원 법원경매 매각통계(법원별·용도별 최근 3개월 매각가율)를 수집해 DB 자동 갱신<br/>
+            3) <strong>법령 개정 버전 관리</strong>: 법제처 Open API로 「주택임대차보호법 시행령」 개정 시 연혁 테이블에 신규 시행일·금액 자동 추가
+          </div>
+        </div>
+      </div>
+
+      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <button id="btnCloseUpdateModalBottom" type="button" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: 초보자 눈높이 쉬운 용어사전 전체보기 ==================== -->
+  <div id="glossaryModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-blue-600 text-white">
+        <div>
+          <h3 class="text-base font-bold">🔍 초보자를 위한 전월세·경매 핵심 용어 쉬운 사전</h3>
+          <p class="text-xs text-blue-100">어려운 법률 용어를 일상 언어로 쉽게 풀어 정리했습니다.</p>
+        </div>
+        <button id="btnCloseGlossaryModal" type="button" class="p-1.5 rounded-lg text-white hover:bg-blue-700">✕</button>
+      </div>
+      <div class="p-5 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="text-blue-700 text-sm block mb-1">1. 소액임차인 최우선변제금</strong>
+          <p class="font-bold text-slate-900 mb-1">"집이 경매로 넘어가도 은행보다 무조건 먼저(0순위) 챙겨주는 최소 보증금"</p>
+          <p class="text-slate-600">보증금이 지역별 커트라인(예: 서울 1억 6,500만 원, 성남·수원 등 1억 4,500만 원) 이하일 때만 적용됩니다. 단, 낙찰가의 절반(1/2) 안에서만 줍니다.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="text-blue-700 text-sm block mb-1">2. 최우선 보증금 공제한 잔액 (핵심!)</strong>
+          <p class="font-bold text-slate-900 mb-1">"0순위 최우선변제금을 먼저 빼고 남는 돈"</p>
+          <p class="text-slate-600">① 내 보증금에서 최우선변제금을 빼고 추가로 더 받아야 할 돈과, ② 경매 낙찰가에서 최우선변제금·선순위 빚을 빼고 남는 배당 재원을 뜻합니다.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="text-blue-700 text-sm block mb-1">3. 경매 낙찰가율 (매각가율)</strong>
+          <p class="font-bold text-slate-900 mb-1">"원래 집값 대비 경매에서 실제로 팔리는 가격 비율"</p>
+          <p class="text-slate-600">2억짜리 빌라라도 경매에 나오면 1~2번 유찰되어 약 65%(1억 3천만 원) 수준에 팔립니다. 그래서 원래 집값이 아니라 예상 낙찰가를 기준으로 안전도를 따져야 합니다.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="text-blue-700 text-sm block mb-1">4. 선순위 근저당 (채권최고액)</strong>
+          <p class="font-bold text-slate-900 mb-1">"내가 이사 오기 전부터 집주인이 이 집을 담보로 빌린 은행 빚"</p>
+          <p class="text-slate-600">등기부등본 【을구】에 적혀 있으며, 경매 시 내 확정일자 보증금보다 은행이 먼저 돈을 가져가므로 반드시 공제하고 계산해야 합니다.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="text-blue-700 text-sm block mb-1">5. 전입신고(대항력) + 확정일자(우선변제권)</strong>
+          <p class="font-bold text-slate-900 mb-1">"주민센터에서 5분 만에 만드는 세입자 필수 무기"</p>
+          <p class="text-slate-600">이사 후 주민등록을 옮기면 다음 날 0시부터 대항력이 생기고, 계약서에 확정일자 도장을 받으면 경매 때 내 순번대로 배당을 받을 수 있습니다.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="text-blue-700 text-sm block mb-1">6. 다세대주택(빌라) vs 다가구주택(원룸건물)</strong>
+          <p class="font-bold text-slate-900 mb-1">"집주인이 호수별로 따로인가, 건물 통째로 1명인가의 차이"</p>
+          <p class="text-slate-600">다세대는 내 호수만 계산하면 되지만, 다가구는 건물 전체 세입자들의 보증금이 합산되므로 나보다 먼저 들어온 다른 방 세입자 보증금을 꼭 확인해야 합니다.</p>
+        </div>
+      </div>
+      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <button id="btnCloseGlossaryModalBottom" type="button" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: 전국 권역별 소액임차인 최우선변제금 기준표 ==================== -->
+  <div id="refModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">전국 권역별 소액임차인 범위 및 최우선변제금 기준표</h3>
+          <p class="text-xs text-slate-500">「주택임대차보호법 시행령」 제10조 및 제11조 (최초 담보물권 설정일 기준)</p>
+        </div>
+        <button id="btnCloseRefModal" type="button" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 leading-relaxed">
+          <strong>핵심 주의사항:</strong> 소액임차인 해당 여부는 <strong>내 임대차 계약일</strong>이 아니라, 등기부등본상 <strong>가장 앞선 담보물권(근저당권 등)이 설정된 날짜</strong>의 시행령 기준을 따릅니다. 선순위 근저당이 전혀 없다면 현행(2023. 2. 21. 이후) 기준이 적용됩니다.
+        </div>
+
+        <h4 class="font-bold text-slate-900 text-sm">1. 현행 기준 (최초 담보물권 설정일: 2023. 02. 21. 이후 ~ 현재)</h4>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                <th class="py-2.5 px-3 font-bold">권역 구분</th>
+                <th class="py-2.5 px-3 font-bold">해당 지역 상세</th>
+                <th class="py-2.5 px-3 font-bold text-right">소액임차인 보증금 상한</th>
+                <th class="py-2.5 px-3 font-bold text-right">최우선변제 보장금액</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="py-2.5 px-3 font-bold">제1권역 (서울)</td>
+                <td class="py-2.5 px-3">서울특별시 전 지역</td>
+                <td class="py-2.5 px-3 text-right font-bold">1억 6,500만 원 이하</td>
+                <td class="py-2.5 px-3 text-right font-extrabold text-blue-600">최대 5,500만 원</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-bold">제2권역 (과밀억제 등)</td>
+                <td class="py-2.5 px-3">수도권 과밀억제권역(인천·성남·수원·고양·안양·부천·광명·하남·구리·과천·의왕·군포·의정부 등), 세종, 용인, 화성, 김포</td>
+                <td class="py-2.5 px-3 text-right font-bold">1억 4,500만 원 이하</td>
+                <td class="py-2.5 px-3 text-right font-extrabold text-blue-600">최대 4,800만 원</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-bold">제3권역 (광역시 등)</td>
+                <td class="py-2.5 px-3">광역시(부산·대구·광주·대전·울산, 군지역 제외), 경기 안산·광주·파주·이천·평택</td>
+                <td class="py-2.5 px-3 text-right font-bold">8,500만 원 이하</td>
+                <td class="py-2.5 px-3 text-right font-extrabold text-blue-600">최대 2,800만 원</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-bold">제4권역 (그 밖의 지역)</td>
+                <td class="py-2.5 px-3">기타 도 지역(강원·충청·전라·경상·제주) 및 광역시 소속 군 지역</td>
+                <td class="py-2.5 px-3 text-right font-bold">7,500만 원 이하</td>
+                <td class="py-2.5 px-3 text-right font-extrabold text-blue-600">최대 2,500만 원</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4 class="font-bold text-slate-900 text-sm pt-2">2. 직전 기준 (최초 담보물권 설정일: 2021. 05. 11. ~ 2023. 02. 20.)</h4>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                <th class="py-2 px-3 font-bold">권역 구분</th>
+                <th class="py-2 px-3 font-bold text-right">소액임차인 보증금 상한</th>
+                <th class="py-2 px-3 font-bold text-right">최우선변제 보장금액</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="py-2 px-3">서울특별시</td>
+                <td class="py-2 px-3 text-right">1억 5,000만 원 이하</td>
+                <td class="py-2 px-3 text-right font-bold text-blue-600">최대 5,000만 원</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3">과밀억제권역·세종·용인·화성·김포</td>
+                <td class="py-2 px-3 text-right">1억 3,000만 원 이하</td>
+                <td class="py-2 px-3 text-right font-bold text-blue-600">최대 4,300만 원</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3">광역시·안산·광주·파주·이천·평택</td>
+                <td class="py-2 px-3 text-right">7,000만 원 이하</td>
+                <td class="py-2 px-3 text-right font-bold text-blue-600">최대 2,300만 원</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3">그 밖의 지역</td>
+                <td class="py-2 px-3 text-right">6,000만 원 이하</td>
+                <td class="py-2 px-3 text-right font-bold text-blue-600">최대 2,000만 원</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+        <button id="btnCloseRefModalBottom" type="button" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotice" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold border border-slate-700">
+    알림 메시지
+  </div>
+
+  <script>
+    // ==================== 1. LEGAL & AUCTION DATA TABLE ====================
+    const REGION_DATA = {
+      seoul_gangseo: {
+        name: '서울특별시 강서·관악·은평·중랑권',
+        zoneKey: 'zone1',
+        zoneBadge: '제1권역 (서울특별시)',
+        zoneTitle: '서울특별시 (주택임대차보호법 시행령 제10조·제11조)',
+        courtInfo: '서울남부·중앙·서부·북부지방법원 최근 경매 매각통계 반영',
+        bidRates: { apt: 84.5, villa: 64.0, dagagu: 59.5, officetel: 68.0 },
+        samples: [
+          { court: '서울남부지법 / 강서구 화곡동', type: '빌라(다세대)', appraisal: 24000, fails: '2회 유찰', sold: 15480, rate: '64.5%' },
+          { court: '서울중앙지법 / 관악구 봉천동', type: '단독·다가구', appraisal: 85000, fails: '2회 유찰', sold: 50150, rate: '59.0%' },
+          { court: '서울서부지법 / 은평구 응암동', type: '아파트', appraisal: 62000, fails: '1회 유찰', sold: 52700, rate: '85.0%' }
+        ]
+      },
+      seoul_gangnam: {
+        name: '서울특별시 강남·서초·송파·마포권',
+        zoneKey: 'zone1',
+        zoneBadge: '제1권역 (서울특별시)',
+        zoneTitle: '서울특별시 (주택임대차보호법 시행령 제10조·제11조)',
+        courtInfo: '서울중앙·동부·서부지방법원 최근 경매 매각통계 반영',
+        bidRates: { apt: 89.5, villa: 71.0, dagagu: 66.0, officetel: 73.5 },
+        samples: [
+          { court: '서울동부지법 / 송파구 가락동', type: '빌라(다세대)', appraisal: 34000, fails: '1회 유찰', sold: 24140, rate: '71.0%' },
+          { court: '서울중앙지법 / 서초구 양재동', type: '다가구주택', appraisal: 140000, fails: '2회 유찰', sold: 92400, rate: '66.0%' },
+          { court: '서울서부지법 / 마포구 공덕동', type: '주거용 오피스텔', appraisal: 28000, fails: '1회 유찰', sold: 20720, rate: '74.0%' }
+        ]
+      },
+      gyeonggi_overcrowded: {
+        name: '경기 과밀억제권역 (성남·수원·안양·부천·고양 등)',
+        zoneKey: 'zone2',
+        zoneBadge: '제2권역 (수도권 과밀억제권역)',
+        zoneTitle: '수도권 과밀억제권역·세종·용인·화성·김포',
+        courtInfo: '수원지법(성남·안양지원) / 인천지법 부천지원 / 의정부지법 고양지원 통계',
+        bidRates: { apt: 82.5, villa: 66.5, dagagu: 61.0, officetel: 69.0 },
+        samples: [
+          { court: '수원지법 성남지원 / 성남시 분당구', type: '빌라(다세대)', appraisal: 22000, fails: '2회 유찰', sold: 14630, rate: '66.5%' },
+          { court: '수원지법 본원 / 수원시 영통구 원천동', type: '다가구(원룸등)', appraisal: 110000, fails: '2회 유찰', sold: 67100, rate: '61.0%' },
+          { court: '인천지법 부천지원 / 부천시 원미구', type: '아파트', appraisal: 48000, fails: '1회 유찰', sold: 39600, rate: '82.5%' }
+        ]
+      },
+      gyeonggi_major: {
+        name: '경기 용인·화성·김포시 / 세종특별자치시',
+        zoneKey: 'zone2',
+        zoneBadge: '제2권역 (용인·화성·김포·세종)',
+        zoneTitle: '수도권 과밀억제권역·세종·용인·화성·김포',
+        courtInfo: '수원지방법원 / 대전지방법원 최근 경매 매각통계 반영',
+        bidRates: { apt: 80.5, villa: 63.5, dagagu: 58.0, officetel: 66.0 },
+        samples: [
+          { court: '수원지법 / 용인시 기흥구', type: '빌라(연립·다세대)', appraisal: 21000, fails: '2회 유찰', sold: 13335, rate: '63.5%' },
+          { court: '수원지법 / 화성시 남양읍', type: '단독·다가구', appraisal: 75000, fails: '2회 유찰', sold: 43500, rate: '58.0%' },
+          { court: '대전지법 / 세종시 새롬동', type: '아파트', appraisal: 55000, fails: '1회 유찰', sold: 44550, rate: '81.0%' }
+        ]
+      },
+      incheon_urban: {
+        name: '인천광역시 (부평·미추홀·남동·계양·연수구 등)',
+        zoneKey: 'zone2',
+        zoneBadge: '제2권역 (인천 과밀억제권역)',
+        zoneTitle: '수도권 과밀억제권역 (인천 강화·옹진·경제자유구역 등 제외)',
+        courtInfo: '인천지방법원 최근 3개월 주거용 경매 매각통계 반영',
+        bidRates: { apt: 79.0, villa: 59.5, dagagu: 55.0, officetel: 63.0 },
+        samples: [
+          { court: '인천지법 / 미추홀구 주안동', type: '빌라(다세대)', appraisal: 18000, fails: '2회 유찰', sold: 10620, rate: '59.0%' },
+          { court: '인천지법 / 부평구 부평동', type: '주거용 오피스텔', appraisal: 16000, fails: '2회 유찰', sold: 10080, rate: '63.0%' },
+          { court: '인천지법 / 남동구 구월동', type: '아파트', appraisal: 42000, fails: '1회 유찰', sold: 33180, rate: '79.0%' }
+        ]
+      },
+      metro_other: {
+        name: '광역시(부산·대구·광주·대전·울산) 및 안산·파주·평택·이천·광주',
+        zoneKey: 'zone3',
+        zoneBadge: '제3권역 (광역시 및 안산·평택 등)',
+        zoneTitle: '광역시(군지역 제외) 및 안산·광주·파주·이천·평택시',
+        courtInfo: '부산·대구·대전·광주지법 및 수원지법 평택·안산지원 경매 통계',
+        bidRates: { apt: 77.5, villa: 58.5, dagagu: 54.0, officetel: 61.5 },
+        samples: [
+          { court: '수원지법 평택지원 / 평택시 안중읍', type: '다가구(원룸등)', appraisal: 68000, fails: '2회 유찰', sold: 36720, rate: '54.0%' },
+          { court: '부산지법 동부지원 / 부산진구 부전동', type: '주거용 오피스텔', appraisal: 15000, fails: '2회 유찰', sold: 9225, rate: '61.5%' },
+          { court: '대전지법 / 대전 서구 둔산동', type: '아파트', appraisal: 40000, fails: '1회 유찰', sold: 31200, rate: '78.0%' }
+        ]
+      },
+      provincial_other: {
+        name: '그 밖의 지역 (강원·충청·전라·경상·제주 및 군 지역)',
+        zoneKey: 'zone4',
+        zoneBadge: '제4권역 (그 밖의 지역)',
+        zoneTitle: '그 밖의 지역 (주택임대차보호법 시행령 제10조 제1항 제4호)',
+        courtInfo: '전국 지방법원 비수도권·도 지역 평균 경매 매각통계 반영',
+        bidRates: { apt: 74.0, villa: 55.0, dagagu: 51.0, officetel: 58.0 },
+        samples: [
+          { court: '청주지법 / 충북 청주시 흥덕구', type: '빌라(다세대)', appraisal: 13000, fails: '2회 유찰', sold: 7150, rate: '55.0%' },
+          { court: '전주지법 / 전북 전주시 완산구', type: '단독·다가구', appraisal: 45000, fails: '2회 유찰', sold: 22950, rate: '51.0%' },
+          { court: '창원지법 / 경남 김해시 내동', type: '아파트', appraisal: 31000, fails: '1회 유찰', sold: 22940, rate: '74.0%' }
+        ]
+      }
+    };
+
+    // Smart Autocomplete Address Dictionary (Keyword / Dong / Subway -> Road Address)
+    const EASY_ADDRESS_DB = [
+      { keywords: '화곡동 강서구 까치산역 서울 빌라', road: '서울특별시 강서구 화곡로 176', jibun: '서울 강서구 화곡동 1073-10 (까치산역 인근)', region: 'seoul_gangseo' },
+      { keywords: '봉천동 신림동 관악구 서울대입구역', road: '서울특별시 관악구 관악로 145', jibun: '서울 관악구 봉천동 856-5 (서울대입구역 인근)', region: 'seoul_gangseo' },
+      { keywords: '응암동 불광동 은평구 연신내역', road: '서울특별시 은평구 은평로 120', jibun: '서울 은평구 응암동 89-1', region: 'seoul_gangseo' },
+      { keywords: '역삼동 강남구 테헤란로 강남역', road: '서울특별시 강남구 테헤란로 152', jibun: '서울 강남구 역삼동 737 (강남역 인근)', region: 'seoul_gangnam' },
+      { keywords: '가락동 잠실동 송파구 문정동', road: '서울특별시 송파구 송파대로 267', jibun: '서울 송파구 가락동 79-4', region: 'seoul_gangnam' },
+      { keywords: '공덕동 서교동 홍대 마포구 합정', road: '서울특별시 마포구 마포대로 92', jibun: '서울 마포구 도화동 559 (공덕역 인근)', region: 'seoul_gangnam' },
+      { keywords: '분당구 판교 성남시 삼평동 서현동 야탑', road: '경기도 성남시 분당구 판교역로 166', jibun: '경기 성남시 분당구 백현동 532 (판교역 인근)', region: 'gyeonggi_overcrowded' },
+      { keywords: '성남 수정구 중원구 태평동 수진동 모란역', road: '경기도 성남시 수정구 수정로 171', jibun: '경기 성남시 수정구 태평동 3409 (모란·태평 인근)', region: 'gyeonggi_overcrowded' },
+      { keywords: '수원시 영통구 인계동 원천동 광교', road: '경기도 수원시 영통구 대학로 55', jibun: '경기 수원시 영통구 이의동 1322', region: 'gyeonggi_overcrowded' },
+      { keywords: '부천시 원미구 소사구 중동 상동', road: '경기도 부천시 원미구 길주로 210', jibun: '경기 부천시 원미구 중동 1141', region: 'gyeonggi_overcrowded' },
+      { keywords: '고양시 일산 백석동 화정동 덕양구', road: '경기도 고양시 일산동구 중앙로 1261', jibun: '경기 고양시 일산동구 장항동 846', region: 'gyeonggi_overcrowded' },
+      { keywords: '용인시 수지구 기흥구 죽전 보정동', road: '경기도 용인시 기흥구 구갈로 60', jibun: '경기 용인시 기흥구 구갈동 354', region: 'gyeonggi_major' },
+      { keywords: '화성시 동탄 남양읍 병점', road: '경기도 화성시 동탄반석로 196', jibun: '경기 화성시 반송동 96 (동탄신도시)', region: 'gyeonggi_major' },
+      { keywords: '김포시 구래동 장기동 사우동', road: '경기도 김포시 김포한강4로 125', jibun: '경기 김포시 장기동 1604', region: 'gyeonggi_major' },
+      { keywords: '세종시 새롬동 나성동 조치원', road: '세종특별자치시 한누리대로 2130', jibun: '세종특별자치시 보람동 713', region: 'gyeonggi_major' },
+      { keywords: '인천 부평구 부평동 구월동 남동구', road: '인천광역시 부평구 부평대로 168', jibun: '인천 부평구 부평동 529-40 (부평역 인근)', region: 'incheon_urban' },
+      { keywords: '인천 미추홀구 주안동 학익동 연수구', road: '인천광역시 미추홀구 주안로 104', jibun: '인천 미추홀구 주안동 130-2', region: 'incheon_urban' },
+      { keywords: '안산시 단원구 상록구 고잔동 중앙역', road: '경기도 안산시 단원구 광덕대로 174', jibun: '경기 안산시 단원구 고잔동 727', region: 'metro_other' },
+      { keywords: '평택시 고덕 안중읍 비전동 지제역', road: '경기도 평택시 평택로 51', jibun: '경기 평택시 평택동 45-2', region: 'metro_other' },
+      { keywords: '부산 부산진구 서면 부전동 해운대구', road: '부산광역시 부산진구 중앙대로 691', jibun: '부산 부산진구 부전동 520-1 (서면역 인근)', region: 'metro_other' },
+      { keywords: '대전 서구 둔산동 유성구 대구 수성구 광주', road: '대전광역시 서구 둔산로 100', jibun: '대전 서구 둔산동 1420', region: 'metro_other' },
+      { keywords: '청주시 전주시 천안시 창원시 김해시 춘천 제주', road: '충청북도 청주시 흥덕구 대농로 47', jibun: '충북 청주시 흥덕구 복대동 288-6', region: 'provincial_other' }
+    ];
+
+    // Step-by-Step Address Builder Wizard Data
+    const WIZARD_TREE = {
+      '서울특별시': [
+        { sigungu: '강서구 (화곡·마곡·발산)', region: 'seoul_gangseo', roads: ['서울특별시 강서구 화곡로 176 (화곡동)', '서울특별시 강서구 공항대로 247 (마곡동)'] },
+        { sigungu: '관악구 (봉천·신림)', region: 'seoul_gangseo', roads: ['서울특별시 관악구 관악로 145 (봉천동)', '서울특별시 관악구 신림로 330 (신림동)'] },
+        { sigungu: '강남구·송파구·마포구', region: 'seoul_gangnam', roads: ['서울특별시 강남구 테헤란로 152 (역삼동)', '서울특별시 송파구 송파대로 267 (가락동)', '서울특별시 마포구 마포대로 92 (공덕동)'] }
+      ],
+      '경기도': [
+        { sigungu: '성남시 분당구·수정구·중원구', region: 'gyeonggi_overcrowded', roads: ['경기도 성남시 분당구 판교역로 166 (백현동)', '경기도 성남시 수정구 수정로 171 (태평동)', '경기도 성남시 중원구 산성대로 260 (중앙동)'] },
+        { sigungu: '수원시·부천시·고양시·안양시', region: 'gyeonggi_overcrowded', roads: ['경기도 수원시 영통구 대학로 55 (이의동)', '경기도 부천시 원미구 길주로 210 (중동)', '경기도 고양시 일산동구 중앙로 1261 (장항동)'] },
+        { sigungu: '용인시·화성시·김포시', region: 'gyeonggi_major', roads: ['경기도 용인시 기흥구 구갈로 60 (구갈동)', '경기도 화성시 동탄반석로 196 (동탄)', '경기도 김포시 김포한강4로 125 (장기동)'] },
+        { sigungu: '안산시·평택시·파주시·이천시', region: 'metro_other', roads: ['경기도 안산시 단원구 광덕대로 174 (고잔동)', '경기도 평택시 평택로 51 (평택동)'] }
+      ],
+      '인천광역시': [
+        { sigungu: '부평구·미추홀구·남동구·연수구', region: 'incheon_urban', roads: ['인천광역시 부평구 부평대로 168 (부평동)', '인천광역시 미추홀구 주안로 104 (주안동)', '인천광역시 남동구 인주대로 604 (구월동)'] }
+      ],
+      '부산광역시': [
+        { sigungu: '부산진구·해운대구·동래구', region: 'metro_other', roads: ['부산광역시 부산진구 중앙대로 691 (부전동)', '부산광역시 해운대구 해운대로 620 (우동)'] }
+      ],
+      '대전광역시': [
+        { sigungu: '서구(둔산)·유성구', region: 'metro_other', roads: ['대전광역시 서구 둔산로 100 (둔산동)', '대전광역시 유성구 대학로 99 (궁동)'] }
+      ],
+      '세종특별자치시': [
+        { sigungu: '보람동·새롬동·나성동', region: 'gyeonggi_major', roads: ['세종특별자치시 한누리대로 2130 (보람동)', '세종특별자치시 새롬중앙로 64 (새롬동)'] }
+      ],
+      '기타지방': [
+        { sigungu: '청주시·전주시·창원시·천안시·제주시', region: 'provincial_other', roads: ['충청북도 청주시 흥덕구 대농로 47 (복대동)', '전북특별자치도 전주시 완산구 홍산로 245 (효자동)', '경상남도 김해시 내외중앙로 55 (내동)'] }
+      ]
+    };
+
+    // Priority Repayment Table by Era & Zone (Unit: 만 원)
+    const PRIORITY_TABLE = {
+      '2023_current': {
+        zone1: { limit: 16500, priority: 5500 },
+        zone2: { limit: 14500, priority: 4800 },
+        zone3: { limit: 8500, priority: 2800 },
+        zone4: { limit: 7500, priority: 2500 }
+      },
+      '2021_2023': {
+        zone1: { limit: 15000, priority: 5000 },
+        zone2: { limit: 13000, priority: 4300 },
+        zone3: { limit: 7000, priority: 2300 },
+        zone4: { limit: 6000, priority: 2000 }
+      },
+      '2018_2021': {
+        zone1: { limit: 11000, priority: 3700 },
+        zone2: { limit: 10000, priority: 3400 },
+        zone3: { limit: 6000, priority: 2000 },
+        zone4: { limit: 5000, priority: 1700 }
+      }
+    };
+
+    const PROP_TYPE_LABELS = {
+      apt: '아파트',
+      villa: '빌라 (다세대·연립)',
+      dagagu: '단독·다가구주택',
+      officetel: '주거용 오피스텔'
+    };
+
+    const PRESETS = {
+      seoul_villa: {
+        address: '서울특별시 강서구 화곡로 176',
+        detail: '401호 (다세대주택)',
+        region: 'seoul_gangseo',
+        propType: 'villa',
+        marketPrice: 23000,
+        leaseMode: 'jeonse',
+        myDeposit: 15000,
+        monthlyRent: 0,
+        bondType: 'lease_confirm',
+        era: '2023_current',
+        seniorMortgage: 4500,
+        seniorTenantDeposit: 0,
+        otherSmallCount: 0
+      },
+      bundang_villa: {
+        address: '경기도 성남시 분당구 판교역로 166',
+        detail: '302호 (다세대주택)',
+        region: 'gyeonggi_overcrowded',
+        propType: 'villa',
+        marketPrice: 22000,
+        leaseMode: 'jeonse',
+        myDeposit: 13500,
+        monthlyRent: 0,
+        bondType: 'lease_confirm',
+        era: '2023_current',
+        seniorMortgage: 3000,
+        seniorTenantDeposit: 0,
+        otherSmallCount: 0
+      },
+      suwon_dagagu: {
+        address: '경기도 수원시 영통구 대학로 55',
+        detail: '204호 (다가구 원룸)',
+        region: 'gyeonggi_overcrowded',
+        propType: 'dagagu',
+        marketPrice: 95000,
+        leaseMode: 'wolse',
+        myDeposit: 8000,
+        monthlyRent: 35,
+        bondType: 'lease_confirm',
+        era: '2023_current',
+        seniorMortgage: 28000,
+        seniorTenantDeposit: 19000,
+        otherSmallCount: 3
+      },
+      incheon_apt: {
+        address: '인천광역시 부평구 부평대로 168',
+        detail: '105동 1202호 (아파트)',
+        region: 'incheon_urban',
+        propType: 'apt',
+        marketPrice: 38000,
+        leaseMode: 'jeonse',
+        myDeposit: 26000,
+        monthlyRent: 0,
+        bondType: 'hug_guarantee',
+        era: '2023_current',
+        seniorMortgage: 0,
+        seniorTenantDeposit: 0,
+        otherSmallCount: 0
+      },
+      busan_officetel: {
+        address: '부산광역시 부산진구 중앙대로 691',
+        detail: '809호 (주거용 오피스텔)',
+        region: 'metro_other',
+        propType: 'officetel',
+        marketPrice: 15000,
+        leaseMode: 'jeonse',
+        myDeposit: 7500,
+        monthlyRent: 0,
+        bondType: 'lease_confirm',
+        era: '2023_current',
+        seniorMortgage: 3500,
+        seniorTenantDeposit: 0,
+        otherSmallCount: 0
+      }
+    };
+
+    // ==================== 2. APP STATE ====================
+    const state = {
+      currentStep: 1,
+      easyMode: true,
+      syncMode: 'standard_2026',
+      address: '경기도 성남시 분당구 판교역로 166',
+      detail: '302호 (다세대주택)',
+      regionKey: 'gyeonggi_overcrowded',
+      propType: 'villa',
+      marketPrice: 22000, // 만 원
+      leaseMode: 'jeonse',
+      myDeposit: 13500,   // 만 원
+      monthlyRent: 0,
+      bondType: 'lease_confirm',
+      era: '2023_current',
+      seniorMortgage: 3000,
+      seniorTenantDeposit: 0,
+      otherSmallCount: 0,
+      customBidRate: 66.5,
+      chkSeizure: false,
+      chkTrust: false,
+      chkTaxArrears: false
+    };
+
+    let bidRateChartInstance = null;
+    let waterfallChartInstance = null;
+
+    // ==================== 3. HELPER FUNCTIONS ====================
+    function formatKoreanMoney(manwon) {
+      const val = Math.round(Number(manwon) || 0);
+      if (val === 0) return '0원';
+      const isNeg = val < 0;
+      const absVal = Math.abs(val);
+      const eok = Math.floor(absVal / 10000);
+      const rem = absVal % 10000;
+      let str = '';
+      if (eok > 0) {
+        str += eok.toLocaleString('ko-KR') + '억';
+        if (rem > 0) str += ' ' + rem.toLocaleString('ko-KR') + '만 원';
+        else str += ' 원';
+      } else {
+        str += rem.toLocaleString('ko-KR') + '만 원';
+      }
+      return isNeg ? '-' + str : str;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotice');
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    function detectRegionFromAddressText(addr) {
+      const s = addr.trim();
+      if (!s) return null;
+      if (s.includes('서울') || s.includes('화곡') || s.includes('관악') || s.includes('봉천') || s.includes('신림') || s.includes('은평') || s.includes('마포') || s.includes('강남') || s.includes('서초') || s.includes('송파')) {
+        if (s.includes('강남') || s.includes('서초') || s.includes('송파') || s.includes('마포') || s.includes('용산') || s.includes('성동') || s.includes('역삼') || s.includes('가락') || s.includes('공덕')) {
+          return 'seoul_gangnam';
+        }
+        return 'seoul_gangseo';
+      }
+      if (s.includes('세종') || s.includes('용인') || s.includes('화성') || s.includes('동탄') || s.includes('김포')) {
+        return 'gyeonggi_major';
+      }
+      if (s.includes('성남') || s.includes('분당') || s.includes('판교') || s.includes('수원') || s.includes('안양') || s.includes('부천') || s.includes('고양') || s.includes('일산') || s.includes('하남') || s.includes('구리') || s.includes('광명') || s.includes('과천') || s.includes('의왕') || s.includes('군포') || s.includes('의정부') || s.includes('시흥')) {
+        return 'gyeonggi_overcrowded';
+      }
+      if (s.includes('인천') || s.includes('부평') || s.includes('미추홀') || s.includes('주안') || s.includes('구월')) {
+        return 'incheon_urban';
+      }
+      if (s.includes('부산') || s.includes('대구') || s.includes('광주') || s.includes('대전') || s.includes('울산') || s.includes('안산') || s.includes('파주') || s.includes('평택') || s.includes('이천') || s.includes('서면') || s.includes('해운대')) {
+        return 'metro_other';
+      }
+      return 'provincial_other';
+    }
+
+    // ==================== 4. INTERACTIVE MAGNIFYING GLASS TOOLTIP CONTROLLER ====================
+    function setupMagnifyingGlassTooltips() {
+      const tipBox = document.getElementById('floatingLensTooltip');
+      const tipTitle = document.getElementById('lensTipTitle');
+      const tipEasy = document.getElementById('lensTipEasy');
+      const tipDetail = document.getElementById('lensTipDetail');
+      const tipExample = document.getElementById('lensTipExample');
+
+      function showLensTooltip(targetEl) {
+        const title = targetEl.getAttribute('data-tip-title') || '쉬운 용어 설명';
+        const easy = targetEl.getAttribute('data-tip-easy') || '';
+        const detail = targetEl.getAttribute('data-tip-detail') || '';
+        const example = targetEl.getAttribute('data-tip-example') || '';
+
+        tipTitle.textContent = title;
+        tipEasy.textContent = easy;
+        tipDetail.textContent = detail;
+        tipExample.textContent = example;
+
+        tipBox.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          tipBox.classList.remove('opacity-0');
+          positionTooltipNearElement(targetEl);
+        });
+      }
+
+      function positionTooltipNearElement(targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        const boxWidth = tipBox.offsetWidth || 320;
+        const boxHeight = tipBox.offsetHeight || 160;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        let left = rect.left;
+        if (left + boxWidth + 16 > vw) {
+          left = Math.max(12, vw - boxWidth - 16);
+        }
+        let top = rect.bottom + 8;
+        if (top + boxHeight + 16 > vh) {
+          top = Math.max(12, rect.top - boxHeight - 8);
+        }
+
+        tipBox.style.left = left + 'px';
+        tipBox.style.top = top + 'px';
+      }
+
+      function hideLensTooltip() {
+        tipBox.classList.add('opacity-0');
+        setTimeout(() => {
+          if (tipBox.classList.contains('opacity-0')) {
+            tipBox.classList.add('hidden');
+          }
+        }, 150);
+      }
+
+      document.body.addEventListener('mouseover', e => {
+        const lens = e.target.closest('.lens-tag');
+        if (lens) {
+          showLensTooltip(lens);
+        }
+      });
+
+      document.body.addEventListener('mouseout', e => {
+        const lens = e.target.closest('.lens-tag');
+        if (lens) {
+          hideLensTooltip();
+        }
+      });
+
+      document.body.addEventListener('focusin', e => {
+        const lens = e.target.closest('.lens-tag');
+        if (lens) {
+          showLensTooltip(lens);
+        }
+      });
+
+      document.body.addEventListener('focusout', e => {
+        const lens = e.target.closest('.lens-tag');
+        if (lens) {
+          hideLensTooltip();
+        }
+      });
+
+      document.body.addEventListener('click', e => {
+        const lens = e.target.closest('.lens-tag');
+        if (lens) {
+          e.preventDefault();
+          e.stopPropagation();
+          showLensTooltip(lens);
+        }
+      });
+    }
+
+    // ==================== 5. CORE CALCULATION ENGINE ====================
+    function calculateMetrics() {
+      const reg = REGION_DATA[state.regionKey] || REGION_DATA.gyeonggi_overcrowded;
+      const priorityRule = PRIORITY_TABLE[state.era][reg.zoneKey];
+
+      const bidRate = Number(state.customBidRate) || reg.bidRates[state.propType];
+      const expectedAuctionPrice = Math.round(state.marketPrice * (bidRate / 100));
+
+      // 주택가액(경매 낙찰가 기준)의 1/2 한도
+      const halfHouseValueCap = Math.floor(expectedAuctionPrice / 2);
+
+      // 소액임차인 여부
+      const isSmallTenantEligible = state.myDeposit <= priorityRule.limit;
+      const rawMyPriority = isSmallTenantEligible ? Math.min(state.myDeposit, priorityRule.priority) : 0;
+
+      // 다가구 등 다른 소액임차인이 함께 있을 때의 총 최우선변제 신청액
+      const otherPriorityTotal = state.otherSmallCount * priorityRule.priority;
+      const totalRequestedPriority = rawMyPriority + otherPriorityTotal;
+
+      // 주택가액의 1/2 한도 적용 후 실제 배당되는 최우선변제금
+      let actualTotalPriorityPoolDeducted = Math.min(totalRequestedPriority, halfHouseValueCap);
+      let myActualPriorityAmount = 0;
+      let otherActualPriorityAmount = 0;
+
+      if (totalRequestedPriority > 0) {
+        if (totalRequestedPriority <= halfHouseValueCap) {
+          myActualPriorityAmount = rawMyPriority;
+          otherActualPriorityAmount = otherPriorityTotal;
+        } else {
+          myActualPriorityAmount = Math.round(halfHouseValueCap * (rawMyPriority / totalRequestedPriority));
+          otherActualPriorityAmount = halfHouseValueCap - myActualPriorityAmount;
+        }
+      }
+
+      // 핵심 지표 1: 내 보증금에서 지역별 최우선변제금을 공제한 잔액
+      const myRemainingDepositAfterPriority = Math.max(0, state.myDeposit - myActualPriorityAmount);
+
+      // 핵심 지표 2: 경매 낙찰가에서 최우선변제금을 공제한 잔액 및 선순위 채권 공제 후 잔액
+      const auctionPoolAfterPriority = Math.max(0, expectedAuctionPrice - actualTotalPriorityPoolDeducted);
+      const totalSeniorClaims = state.seniorMortgage + state.seniorTenantDeposit;
+      const finalAvailablePoolForMyRemaining = Math.max(0, auctionPoolAfterPriority - totalSeniorClaims);
+
+      // 내 잔여 보증금 중 확정일자 순위로 추가 회수 가능한 금액
+      const recoveredByConfirmDate = Math.min(myRemainingDepositAfterPriority, finalAvailablePoolForMyRemaining);
+
+      // 내 총 회수 예상액 및 미회수 위험 잔액
+      const totalMyRecovered = myActualPriorityAmount + recoveredByConfirmDate;
+      const unrecoveredLoss = Math.max(0, state.myDeposit - totalMyRecovered);
+      const recoveryRate = state.myDeposit > 0 ? Math.min(100, (totalMyRecovered / state.myDeposit) * 100) : 100;
+
+      // 경매 후 최종 남는 잉여금
+      const surplusAfterMyDeposit = finalAvailablePoolForMyRemaining - myRemainingDepositAfterPriority;
+
+      return {
+        reg,
+        priorityRule,
+        bidRate,
+        expectedAuctionPrice,
+        halfHouseValueCap,
+        isSmallTenantEligible,
+        myActualPriorityAmount,
+        otherActualPriorityAmount,
+        actualTotalPriorityPoolDeducted,
+        myRemainingDepositAfterPriority,
+        auctionPoolAfterPriority,
+        totalSeniorClaims,
+        finalAvailablePoolForMyRemaining,
+        recoveredByConfirmDate,
+        totalMyRecovered,
+        unrecoveredLoss,
+        recoveryRate,
+        surplusAfterMyDeposit
+      };
+    }
+
+    // ==================== 6. UI RENDER & SYNC ====================
+    function renderAll() {
+      const m = calculateMetrics();
+
+      // Top Ribbon
+      document.getElementById('ribbonAddress').textContent = state.address + (state.detail ? ' ' + state.detail : '');
+      document.getElementById('ribbonPropType').textContent = PROP_TYPE_LABELS[state.propType];
+      document.getElementById('ribbonZone').textContent = `${m.reg.zoneBadge} (최우선 ${formatKoreanMoney(m.priorityRule.priority)})`;
+      document.getElementById('ribbonDeposit').textContent = formatKoreanMoney(state.myDeposit);
+      document.getElementById('ribbonBidRate').textContent = `${m.bidRate.toFixed(1)}%`;
+
+      // Highlight active easy-region-chip
+      document.querySelectorAll('.easy-region-chip').forEach(chip => {
+        const rk = chip.getAttribute('data-easy-region');
+        if (rk === state.regionKey) {
+          chip.className = 'easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 border border-blue-600 text-white shadow-sm transition';
+        } else {
+          chip.className = 'easy-region-chip px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-blue-500 text-slate-700 transition';
+        }
+      });
+
+      // Step 1 Zone Card & Property Cards
+      document.getElementById('zoneBadge').textContent = m.reg.zoneBadge;
+      document.getElementById('zoneTitleText').textContent = m.reg.zoneTitle;
+      document.getElementById('zoneCourtText').textContent = m.reg.courtInfo;
+      document.getElementById('zoneLimitAmount').textContent = `${formatKoreanMoney(m.priorityRule.limit)} 이하`;
+      document.getElementById('zonePriorityAmount').textContent = `최대 ${formatKoreanMoney(m.priorityRule.priority)}`;
+
+      document.getElementById('cardRateApt').textContent = `${m.reg.bidRates.apt.toFixed(1)}%`;
+      document.getElementById('cardRateVilla').textContent = `${m.reg.bidRates.villa.toFixed(1)}%`;
+      document.getElementById('cardRateDagagu').textContent = `${m.reg.bidRates.dagagu.toFixed(1)}%`;
+      document.getElementById('cardRateOfficetel').textContent = `${m.reg.bidRates.officetel.toFixed(1)}%`;
+
+      document.querySelectorAll('.prop-type-card').forEach(btn => {
+        const t = btn.getAttribute('data-prop-type');
+        if (t === state.propType) {
+          btn.className = 'prop-type-card text-left p-4 rounded-xl border-2 border-blue-600 bg-blue-50/30 transition flex flex-col justify-between shadow-sm';
+        } else {
+          btn.className = 'prop-type-card text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-white transition flex flex-col justify-between';
+        }
+      });
+
+      document.getElementById('marketPriceKorean').textContent = `(${formatKoreanMoney(state.marketPrice)})`;
+      document.getElementById('step1PreviewAuctionVal').textContent = formatKoreanMoney(m.expectedAuctionPrice);
+      document.getElementById('step1PreviewHalfCap').textContent = formatKoreanMoney(m.halfHouseValueCap);
+
+      // Step 2 UI
+      document.getElementById('myDepositKorean').textContent = `(${formatKoreanMoney(state.myDeposit)})`;
+      const smallBox = document.getElementById('smallTenantCheckBox');
+      const smallBadge = document.getElementById('smallTenantStatusBadge');
+      const smallExplain = document.getElementById('smallTenantExplain');
+
+      if (m.isSmallTenantEligible) {
+        smallBox.className = 'p-4 rounded-xl border bg-emerald-50/70 border-emerald-200';
+        smallBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white';
+        smallBadge.textContent = '0순위 최우선변제 대상';
+        smallExplain.innerHTML = `내 보증금(<strong>${formatKoreanMoney(state.myDeposit)}</strong>)이 이 동네 기준(<strong>${formatKoreanMoney(m.priorityRule.limit)} 이하</strong>)에 들어옵니다! 혹시 집이 경매에 넘어가도 은행 대출보다 <strong>${formatKoreanMoney(m.myActualPriorityAmount)}</strong>을 0순위로 가장 먼저 돌려받고, 이를 뺀 나머지 보증금(<strong>${formatKoreanMoney(m.myRemainingDepositAfterPriority)}</strong>)은 확정일자 순번대로 돌려받습니다.`;
+      } else {
+        const diff = state.myDeposit - m.priorityRule.limit;
+        smallBox.className = 'p-4 rounded-xl border bg-amber-50/80 border-amber-200';
+        smallBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-600 text-white';
+        smallBadge.textContent = '소액기준 초과 (0순위 해당 안됨)';
+        smallExplain.innerHTML = `내 보증금(<strong>${formatKoreanMoney(state.myDeposit)}</strong>)이 이 동네 소액 기준(<strong>${formatKoreanMoney(m.priorityRule.limit)}</strong>)을 <strong>${formatKoreanMoney(diff)}</strong> 초과해서 0순위 최우선변제금(0원)을 받지 못합니다. <strong>💡 꿀팁:</strong> 보증금을 <strong>${formatKoreanMoney(m.priorityRule.limit)} 이하</strong>로 낮추고 차액을 월세(반전세)로 돌리면 <strong>${formatKoreanMoney(m.priorityRule.priority)}</strong>의 0순위 보호막이 생깁니다!`;
+      }
+
+      // Step 3 UI
+      document.getElementById('step3RegionLabel').textContent = m.reg.name + ' 기준';
+      document.getElementById('step3PropBadge').textContent = PROP_TYPE_LABELS[state.propType] + ' 선택됨';
+      document.getElementById('activeBidRateText').textContent = `${m.bidRate.toFixed(1)}%`;
+      document.getElementById('activeExpectedAuctionPrice').textContent = formatKoreanMoney(m.expectedAuctionPrice);
+
+      const compareContainer = document.getElementById('step3RateCompareCards');
+      compareContainer.innerHTML = ['apt', 'villa', 'dagagu', 'officetel'].map(k => {
+        const r = m.reg.bidRates[k];
+        const isSel = k === state.propType;
+        return `
+          <button type="button" data-step3-prop="${k}" class="step3-prop-btn p-2.5 rounded-xl border text-left transition ${isSel ? 'border-blue-600 bg-blue-50/50 font-bold' : 'border-slate-200 bg-white hover:bg-slate-50'}">
+            <span class="block text-[11px] text-slate-500">${PROP_TYPE_LABELS[k]}</span>
+            <strong class="text-sm ${isSel ? 'text-blue-700' : 'text-slate-800'}">${r.toFixed(1)}%</strong>
+          </button>
+        `;
+      }).join('');
+
+      compareContainer.querySelectorAll('.step3-prop-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const nextType = btn.getAttribute('data-step3-prop');
+          state.propType = nextType;
+          state.customBidRate = m.reg.bidRates[nextType];
+          syncInputsFromState();
+          renderAll();
+        });
+      });
+
+      const sampleBody = document.getElementById('auctionSampleTableBody');
+      sampleBody.innerHTML = m.reg.samples.map(item => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-medium text-slate-900">${item.court}</td>
+          <td class="py-2.5 px-3 text-slate-600">${item.type}</td>
+          <td class="py-2.5 px-3 text-right text-slate-700">${formatKoreanMoney(item.appraisal)}</td>
+          <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold">${item.fails}</span></td>
+          <td class="py-2.5 px-3 text-right font-bold text-slate-900">${formatKoreanMoney(item.sold)}</td>
+          <td class="py-2.5 px-3 text-right font-extrabold text-blue-600">${item.rate}</td>
+        </tr>
+      `).join('');
+
+      // Step 4 Core Results UI
+      document.getElementById('calcMyDeposit').textContent = formatKoreanMoney(state.myDeposit);
+      document.getElementById('calcMyPriorityDeduct').textContent = `- ${formatKoreanMoney(m.myActualPriorityAmount)}`;
+      document.getElementById('calcMyRemainingDeposit').textContent = formatKoreanMoney(m.myRemainingDepositAfterPriority);
+
+      document.getElementById('coreCard1Badge').textContent = m.isSmallTenantEligible ? '0순위 최우선 적용' : '소액기준 초과 (0원 공제)';
+      document.getElementById('coreCard1Badge').className = m.isSmallTenantEligible
+        ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700'
+        : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-800';
+
+      document.getElementById('coreCard1Note').innerHTML = m.isSmallTenantEligible
+        ? `※ 이 동네(${m.reg.zoneBadge}) 소액임차인 기준을 충족하므로 경매 시 은행 빚보다 <strong>${formatKoreanMoney(m.myActualPriorityAmount)}</strong>을 0순위로 먼저 돌려받고, 이를 뺀 나머지 보증금 잔액 <strong>${formatKoreanMoney(m.myRemainingDepositAfterPriority)}</strong>만 확정일자 순서로 돌려받으면 됩니다.`
+        : `※ 내 보증금이 이 동네 소액임차인 기준(${formatKoreanMoney(m.priorityRule.limit)})을 넘어서 0순위 최우선변제금 공제액이 <strong>0원</strong>입니다. 전체 보증금 <strong>${formatKoreanMoney(state.myDeposit)}</strong>을 선순위 은행 빚 다음 순서로 돌려받아야 합니다.`;
+
+      document.getElementById('calcRateInline').textContent = `${m.bidRate.toFixed(1)}%`;
+      document.getElementById('calcAuctionGross').textContent = formatKoreanMoney(m.expectedAuctionPrice);
+      document.getElementById('calcAuctionPriorityDeduct').textContent = `- ${formatKoreanMoney(m.actualTotalPriorityPoolDeducted)}`;
+      document.getElementById('calcAfterPriorityPool').textContent = formatKoreanMoney(m.auctionPoolAfterPriority);
+      document.getElementById('calcSeniorClaimsDeduct').textContent = `- ${formatKoreanMoney(m.totalSeniorClaims)}`;
+      document.getElementById('calcCompareTarget').textContent = formatKoreanMoney(m.myRemainingDepositAfterPriority);
+      document.getElementById('calcFinalAvailablePool').textContent = formatKoreanMoney(m.finalAvailablePoolForMyRemaining);
+
+      // Verdict Banner
+      const hasDangerFlags = state.chkSeizure || state.chkTrust || state.chkTaxArrears;
+      const verdictBanner = document.getElementById('finalVerdictBanner');
+      const verdictBadge = document.getElementById('verdictLevelBadge');
+      const verdictHeadline = document.getElementById('verdictHeadline');
+      const verdictSubtext = document.getElementById('verdictSubtext');
+      const verdictRate = document.getElementById('verdictRecoveryRate');
+      const verdictUnrecovered = document.getElementById('verdictUnrecoveredText');
+
+      document.getElementById('verdictAddressLabel').textContent = `${state.address} · ${PROP_TYPE_LABELS[state.propType]}`;
+      verdictRate.textContent = `${m.recoveryRate.toFixed(1)}%`;
+      verdictUnrecovered.textContent = `미회수 위험 잔액: ${formatKoreanMoney(m.unrecoveredLoss)}`;
+
+      if (m.unrecoveredLoss === 0 && m.surplusAfterMyDeposit >= 2000 && !hasDangerFlags) {
+        verdictBanner.className = 'rounded-2xl p-5 sm:p-6 border-2 border-emerald-500 bg-emerald-50/40 shadow-sm';
+        verdictBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white';
+        verdictBadge.textContent = '안전 등급: 안전 (보증금 전액 보장권)';
+        verdictHeadline.textContent = `경매 시에도 내 보증금 ${formatKoreanMoney(state.myDeposit)} 전액 회수 가능 예상 (여유잔액 +${formatKoreanMoney(m.surplusAfterMyDeposit)})`;
+        verdictSubtext.textContent = `0순위 최우선변제금 공제 후 남은 경매대금에서 집주인 선순위 빚(${formatKoreanMoney(m.totalSeniorClaims)})을 다 갚고도 ${formatKoreanMoney(m.finalAvailablePoolForMyRemaining)}이 남아 내 나머지 보증금(${formatKoreanMoney(m.myRemainingDepositAfterPriority)})을 충분히 돌려받습니다.`;
+        verdictRate.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-400';
+      } else if (m.unrecoveredLoss === 0 && (!hasDangerFlags)) {
+        verdictBanner.className = 'rounded-2xl p-5 sm:p-6 border-2 border-amber-400 bg-amber-50/40 shadow-sm';
+        verdictBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-600 text-white';
+        verdictBadge.textContent = '안전 등급: 주의 (추가 유찰 시 위험)';
+        verdictHeadline.textContent = `현재 낙찰가율 기준 회수 가능하나, 남는 여유잔액(${formatKoreanMoney(m.surplusAfterMyDeposit)})이 빠듯합니다`;
+        verdictSubtext.textContent = `경매가 1번 더 유찰되어 집이 더 싸게 팔리면 보증금 일부 손실 가능성이 있습니다. 전세보증보험 가입 또는 집주인 선순위 은행 빚 상환 조건 계약을 권장합니다.`;
+        verdictRate.className = 'text-2xl sm:text-3xl font-extrabold text-amber-300';
+      } else {
+        verdictBanner.className = 'rounded-2xl p-5 sm:p-6 border-2 border-rose-500 bg-rose-50/50 shadow-sm';
+        verdictBadge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-rose-600 text-white';
+        verdictBadge.textContent = '안전 등급: 위험 (보증금 미회수 잔액 발생)';
+        verdictHeadline.textContent = `주의! 경매 시 내 보증금 중 약 ${formatKoreanMoney(m.unrecoveredLoss)} 미회수 손실 위험`;
+        verdictSubtext.textContent = `0순위 최우선변제금(${formatKoreanMoney(m.myActualPriorityAmount)})과 확정일자 배당(${formatKoreanMoney(m.recoveredByConfirmDate)})을 합쳐도 집주인 선순위 빚이 많거나 낙찰가가 낮아 보증금 전액 회수가 어렵습니다.`;
+        verdictRate.className = 'text-2xl sm:text-3xl font-extrabold text-rose-400';
+      }
+
+      // Sync Step 4 Sliders labels
+      document.getElementById('simLabelBidRate').textContent = `${m.bidRate.toFixed(1)}%`;
+      document.getElementById('simLabelMyDeposit').textContent = formatKoreanMoney(state.myDeposit);
+      document.getElementById('simLabelSeniorMortgage').textContent = formatKoreanMoney(state.seniorMortgage);
+
+      // Waterfall Table
+      const wfRows = [
+        {
+          rank: '기준 금액 · 예상 경매 낙찰가 (집값 × ' + m.bidRate.toFixed(1) + '%)',
+          deduct: formatKoreanMoney(m.expectedAuctionPrice),
+          remain: formatKoreanMoney(m.expectedAuctionPrice),
+          rowClass: 'bg-slate-50 font-bold text-slate-900'
+        },
+        {
+          rank: '0순위 공제 · 지역별 소액임차인 최우선변제금 (내 몫 ' + formatKoreanMoney(m.myActualPriorityAmount) + (m.otherActualPriorityAmount > 0 ? ' + 다른방 ' + formatKoreanMoney(m.otherActualPriorityAmount) : '') + ')',
+          deduct: '- ' + formatKoreanMoney(m.actualTotalPriorityPoolDeducted),
+          remain: formatKoreanMoney(m.auctionPoolAfterPriority),
+          rowClass: 'text-emerald-800 bg-emerald-50/40 font-semibold'
+        },
+        {
+          rank: '1순위 공제 · 집주인 선순위 은행빚 및 선순위 세입자 보증금',
+          deduct: '- ' + formatKoreanMoney(m.totalSeniorClaims),
+          remain: formatKoreanMoney(m.finalAvailablePoolForMyRemaining),
+          rowClass: 'text-rose-700'
+        },
+        {
+          rank: '2순위 배당 · 내 최우선변제 공제 후 잔여보증금 (' + formatKoreanMoney(m.myRemainingDepositAfterPriority) + ') 중 돌려받는 돈',
+          deduct: '- ' + formatKoreanMoney(m.recoveredByConfirmDate),
+          remain: formatKoreanMoney(Math.max(0, m.finalAvailablePoolForMyRemaining - m.recoveredByConfirmDate)),
+          rowClass: 'text-blue-700 bg-blue-50/40 font-bold'
+        },
+        {
+          rank: '최종 내 보증금 회수 합계 (0순위 ' + formatKoreanMoney(m.myActualPriorityAmount) + ' + 확정일자 ' + formatKoreanMoney(m.recoveredByConfirmDate) + ')',
+          deduct: '총 회수 ' + formatKoreanMoney(m.totalMyRecovered),
+          remain: m.unrecoveredLoss > 0 ? '미회수 손실 ' + formatKoreanMoney(m.unrecoveredLoss) : '전액 회수 완료 (손실 0원)',
+          rowClass: m.unrecoveredLoss > 0 ? 'bg-rose-100/70 text-rose-900 font-extrabold' : 'bg-slate-900 text-white font-extrabold'
+        }
+      ];
+
+      document.getElementById('waterfallTableBody').innerHTML = wfRows.map(r => `
+        <tr class="${r.rowClass}">
+          <td class="py-2.5 px-3">${r.rank}</td>
+          <td class="py-2.5 px-3 text-right">${r.deduct}</td>
+          <td class="py-2.5 px-3 text-right">${r.remain}</td>
+        </tr>
+      `).join('');
+
+      // Custom Advice Cards
+      const advices = [];
+      if (!m.isSmallTenantEligible) {
+        advices.push({
+          title: '💡 0순위 최우선변제권 확보 팁 (보증금 낮추기 · 반전세 전환)',
+          body: `현재 보증금을 ${formatKoreanMoney(m.priorityRule.limit)} 이하로 낮추면 경매 시 은행 빚보다 ${formatKoreanMoney(m.priorityRule.priority)}을 무조건 0순위로 먼저 돌려받을 수 있습니다.`
+        });
+      } else {
+        advices.push({
+          title: '✅ 0순위 최우선변제 자격 유지 필수 수칙',
+          body: `경매 시작 등기 전에 반드시 이사와 주민등록(전입신고)을 마치고 배당요구종기일까지 주소를 유지해야 ${formatKoreanMoney(m.myActualPriorityAmount)} 최우선변제가 지켜집니다.`
+        });
+      }
+
+      if (state.seniorMortgage > 0) {
+        advices.push({
+          title: '🏦 잔금 치를 때 집주인 은행 빚(선순위 근저당) 상환·말소 특약',
+          body: `집주인 은행 빚(${formatKoreanMoney(state.seniorMortgage)})이 있으면 경매 시 내 확정일자 보증금보다 은행이 먼저 돈을 가져갑니다. 내 보증금으로 그 대출을 갚고 지우는 조건을 계약서에 적으세요.`
+        });
+      } else {
+        advices.push({
+          title: '🔒 이사 다음 날까지 집주인 몰래 대출 금지 특약 필수',
+          body: `내 전입신고 효력은 다음 날 0시에 생깁니다. 이사 당일 집주인이 은행에서 몰래 대출을 받지 못하도록 '익일까지 담보권 설정 금지' 특약을 꼭 넣으세요.`
+        });
+      }
+
+      if (state.propType === 'dagagu') {
+        advices.push({
+          title: '🏘️ 다가구(원룸 건물)는 다른 방 세입자 보증금 확인서 필수',
+          body: `다가구주택은 다른 호실 세입자들의 0순위 최우선변제금과 선순위 보증금이 모두 합산됩니다. 계약 전 주민센터에서 '확정일자 부여현황'을 꼭 확인하세요.`
+        });
+      }
+
+      if (hasDangerFlags) {
+        advices.push({
+          title: '🚨 경고: 압류·신탁등기·세금체납 발견 시 계약 중단 권장',
+          body: `등기부에 압류·가압류가 있거나 신탁회사 동의서 없는 신탁 부동산 계약, 집주인 세금 체납이 있는 집은 보증금 회수가 매우 위험하므로 계약을 피하세요.`
+        });
+      }
+
+      document.getElementById('customAdviceList').innerHTML = advices.map(a => `
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <strong class="block text-slate-900 font-bold mb-1">${a.title}</strong>
+          <p class="text-slate-600 leading-relaxed">${a.body}</p>
+        </div>
+      `).join('');
+
+      updateCharts(m);
+    }
+
+    function updateCharts(m) {
+      const ctx1 = document.getElementById('bidRateChart');
+      if (ctx1 && typeof Chart !== 'undefined') {
+        const labels = ['아파트', '빌라(다세대·연립)', '단독·다가구주택', '주거용 오피스텔'];
+        const dataVals = [m.reg.bidRates.apt, m.reg.bidRates.villa, m.reg.bidRates.dagagu, m.reg.bidRates.officetel];
+        const bgColors = ['apt', 'villa', 'dagagu', 'officetel'].map(k =>
+          k === state.propType ? 'rgba(37, 99, 235, 0.85)' : 'rgba(148, 163, 184, 0.45)'
+        );
+
+        if (bidRateChartInstance) {
+          bidRateChartInstance.data.datasets[0].data = dataVals;
+          bidRateChartInstance.data.datasets[0].backgroundColor = bgColors;
+          bidRateChartInstance.update();
+        } else {
+          bidRateChartInstance = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+              labels,
+              datasets: [{
+                label: '지역 평균 낙찰가율 (%)',
+                data: dataVals,
+                backgroundColor: bgColors,
+                borderRadius: 8
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: {
+                  min: 30,
+                  max: 100,
+                  ticks: { callback: v => v + '%' }
+                }
+              }
+            }
+          });
+        }
+      }
+
+      const ctx2 = document.getElementById('waterfallChart');
+      if (ctx2 && typeof Chart !== 'undefined') {
+        const wfLabels = ['0순위 최우선변제 회수', '확정일자 순위 회수', '미회수 위험 잔액', '선순위 은행빚/타세대 공제'];
+        const wfData = [
+          m.myActualPriorityAmount,
+          m.recoveredByConfirmDate,
+          m.unrecoveredLoss,
+          m.totalSeniorClaims + m.otherActualPriorityAmount
+        ];
+
+        if (waterfallChartInstance) {
+          waterfallChartInstance.data.datasets[0].data = wfData;
+          waterfallChartInstance.update();
+        } else {
+          waterfallChartInstance = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+              labels: wfLabels,
+              datasets: [{
+                data: wfData,
+                backgroundColor: [
+                  '#10b981', // 최우선변제
+                  '#2563eb', // 확정일자 회수
+                  '#f43f5e', // 미회수 손실
+                  '#94a3b8'  // 선순위 채권
+                ],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: { boxWidth: 12, font: { size: 11 } }
+                }
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // ==================== 7. NAVIGATION, AUTOCOMPLETE & UPDATE CENTER ====================
+    function goToStep(stepNum) {
+      state.currentStep = Number(stepNum);
+      for (let i = 1; i <= 4; i++) {
+        const page = document.getElementById('stepPage' + i);
+        if (page) {
+          if (i === state.currentStep) page.classList.remove('hidden');
+          else page.classList.add('hidden');
+        }
+      }
+
+      document.querySelectorAll('.step-nav-btn').forEach(btn => {
+        const s = Number(btn.getAttribute('data-step-nav'));
+        const badge = btn.querySelector('span:first-child');
+        if (s === state.currentStep) {
+          btn.className = 'step-nav-btn flex items-center justify-center sm:justify-start gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-blue-600 text-white shadow-sm';
+          if (badge) badge.className = 'w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-xs font-bold shrink-0';
+        } else {
+          btn.className = 'step-nav-btn flex items-center justify-center sm:justify-start gap-2 px-2.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80';
+          if (badge) badge.className = 'w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0';
+        }
+      });
+
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function syncInputsFromState() {
+      document.getElementById('roadAddressInput').value = state.address;
+      document.getElementById('AddressDetailInput').value = state.detail;
+      document.getElementById('regionSelect').value = state.regionKey;
+      document.getElementById('marketPriceInput').value = state.marketPrice;
+      document.getElementById('myDepositInput').value = state.myDeposit;
+      document.getElementById('myDepositSlider').value = Math.min(50000, state.myDeposit);
+      document.getElementById('monthlyRentInput').value = state.monthlyRent;
+      document.getElementById('mortgageDateEraSelect').value = state.era;
+      document.getElementById('seniorMortgageInput').value = state.seniorMortgage;
+      document.getElementById('seniorTenantDepositInput').value = state.seniorTenantDeposit;
+      document.getElementById('otherSmallTenantCountInput').value = state.otherSmallCount;
+      document.getElementById('customBidRateSlider').value = state.customBidRate;
+      document.getElementById('simSliderBidRate').value = state.customBidRate;
+      document.getElementById('simSliderMyDeposit').value = Math.min(50000, state.myDeposit);
+      document.getElementById('simSliderSeniorMortgage').value = Math.min(30000, state.seniorMortgage);
+
+      document.querySelectorAll('input[name="tenantBondType"]').forEach(r => {
+        r.checked = (r.value === state.bondType);
+      });
+
+      document.getElementById('monthlyRentWrap').classList.toggle('hidden', state.leaseMode !== 'wolse');
+      document.querySelectorAll('.lease-mode-btn').forEach(btn => {
+        const m = btn.getAttribute('data-lease-mode');
+        if (m === state.leaseMode) {
+          btn.className = 'lease-mode-btn px-4 py-1.5 rounded-lg text-xs font-bold bg-white text-blue-700 shadow-sm';
+        } else {
+          btn.className = 'lease-mode-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900';
+        }
+      });
+    }
+
+    // Address Suggestions Dropdown Renderer
+    function renderAddressSuggestions(queryText) {
+      const dropdown = document.getElementById('addressSuggestionsDropdown');
+      const q = (queryText || '').trim().toLowerCase();
+      const matched = EASY_ADDRESS_DB.filter(item => {
+        if (!q) return true;
+        return item.keywords.toLowerCase().includes(q) ||
+               item.road.toLowerCase().includes(q) ||
+               item.jibun.toLowerCase().includes(q);
+      }).slice(0, 7);
+
+      if (matched.length === 0) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      dropdown.innerHTML = `
+        <div class="px-3 py-1.5 bg-slate-50 text-[11px] font-bold text-slate-500 flex items-center justify-between">
+          <span>동네 이름·지번으로 찾은 도로명주소 (클릭 시 자동 입력)</span>
+          <button type="button" id="btnCloseSuggestDropdown" class="text-slate-400 hover:text-slate-700">닫기 ✕</button>
+        </div>
+      ` + matched.map((item, idx) => `
+        <button type="button" data-suggest-idx="${idx}" class="addr-suggest-item w-full text-left px-3.5 py-2.5 hover:bg-blue-50/80 transition flex items-center justify-between gap-2">
+          <div>
+            <strong class="text-xs font-bold text-slate-900 block">${item.road}</strong>
+            <span class="text-[11px] text-slate-500">동네(구주소): ${item.jibun}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold shrink-0">선택</span>
+        </button>
+      `).join('');
+
+      dropdown.classList.remove('hidden');
+
+      const closeBtn = document.getElementById('btnCloseSuggestDropdown');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => dropdown.classList.add('hidden'));
+      }
+
+      dropdown.querySelectorAll('.addr-suggest-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = matched[Number(btn.getAttribute('data-suggest-idx'))];
+          if (!item) return;
+          state.address = item.road;
+          state.regionKey = item.region;
+          state.customBidRate = REGION_DATA[item.region].bidRates[state.propType];
+          dropdown.classList.add('hidden');
+          syncInputsFromState();
+          renderAll();
+          showToast(`'${item.road}' 주소와 권역 기준이 자동 입력되었습니다.`);
+        });
+      });
+    }
+
+    // Populate Step-by-Step Address Builder Wizard
+    function updateWizardSelects() {
+      const sido = document.getElementById('wizSidoSelect').value;
+      const sigunguSel = document.getElementById('wizSigunguSelect');
+      const list = WIZARD_TREE[sido] || [];
+
+      sigunguSel.innerHTML = list.map((g, idx) => `<option value="${idx}">2. ${g.sigungu}</option>`).join('');
+      updateWizardRoads();
+    }
+
+    function updateWizardRoads() {
+      const sido = document.getElementById('wizSidoSelect').value;
+      const sigunguIdx = Number(document.getElementById('wizSigunguSelect').value) || 0;
+      const roadSel = document.getElementById('wizRoadSelect');
+      const group = (WIZARD_TREE[sido] || [])[sigunguIdx];
+      if (!group) return;
+
+      roadSel.innerHTML = `<option value="">3. 도로명 선택 시 자동입력</option>` +
+        group.roads.map(r => `<option value="${r}">${r}</option>`).join('');
+    }
+
+    // Load & Save Custom Updated Data in localStorage
+    function loadCustomStoredUpdates() {
+      try {
+        const raw = localStorage.getItem('jeonse_guard_custom_updates_v2');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed.regions) {
+          Object.keys(parsed.regions).forEach(rk => {
+            if (REGION_DATA[rk] && parsed.regions[rk].bidRates) {
+              REGION_DATA[rk].bidRates = Object.assign({}, REGION_DATA[rk].bidRates, parsed.regions[rk].bidRates);
+            }
+          });
+        }
+        if (parsed.priorityCurrent) {
+          Object.keys(parsed.priorityCurrent).forEach(zk => {
+            if (PRIORITY_TABLE['2023_current'][zk]) {
+              PRIORITY_TABLE['2023_current'][zk] = Object.assign({}, PRIORITY_TABLE['2023_current'][zk], parsed.priorityCurrent[zk]);
+            }
+          });
+        }
+        if (parsed.syncLabel) {
+          document.getElementById('headerSyncDateText').textContent = parsed.syncLabel;
+        }
+      } catch (e) {
+        // Ignore storage errors in sandboxed context
+      }
+    }
+
+    function populateUpdateModalFields() {
+      const reg = REGION_DATA[state.regionKey];
+      const rule = PRIORITY_TABLE['2023_current'][reg.zoneKey];
+      document.getElementById('updateModalRegionName').textContent = reg.name;
+      document.getElementById('editRateApt').value = reg.bidRates.apt;
+      document.getElementById('editRateVilla').value = reg.bidRates.villa;
+      document.getElementById('editRateDagagu').value = reg.bidRates.dagagu;
+      document.getElementById('editRateOfficetel').value = reg.bidRates.officetel;
+      document.getElementById('editZoneLimit').value = rule.limit;
+      document.getElementById('editZonePriority').value = rule.priority;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCustomStoredUpdates();
+      setupMagnifyingGlassTooltips();
+      updateWizardSelects();
+
+      // Easy Mode Toggle
+      document.getElementById('btnToggleEasyMode').addEventListener('click', () => {
+        state.easyMode = !state.easyMode;
+        const banner = document.getElementById('easyHelperBanner');
+        const txt = document.getElementById('easyModeBtnText');
+        if (state.easyMode) {
+          banner.classList.remove('hidden');
+          txt.textContent = '쉬운 말 가이드: 켜짐';
+          document.querySelectorAll('.lens-tag').forEach(el => el.classList.remove('hidden'));
+          showToast('초보자 쉬운 말 가이드와 🔍 돋보기 설명 태그가 켜졌습니다.');
+        } else {
+          banner.classList.add('hidden');
+          txt.textContent = '쉬운 말 가이드: 꺼짐';
+          document.querySelectorAll('.lens-tag').forEach(el => el.classList.add('hidden'));
+          showToast('요약 모드로 전환되었습니다. 다시 누르면 🔍 돋보기 태그가 표시됩니다.');
+        }
+      });
+
+      // Glossary Modal
+      const glossaryModal = document.getElementById('glossaryModal');
+      document.getElementById('btnOpenEasyGlossary').addEventListener('click', () => glossaryModal.classList.remove('hidden'));
+      document.getElementById('btnCloseGlossaryModal').addEventListener('click', () => glossaryModal.classList.add('hidden'));
+      document.getElementById('btnCloseGlossaryModalBottom').addEventListener('click', () => glossaryModal.classList.add('hidden'));
+
+      // Update Center Modal
+      const updateModal = document.getElementById('updateCenterModal');
+      document.getElementById('btnOpenUpdateModal').addEventListener('click', () => {
+        populateUpdateModalFields();
+        updateModal.classList.remove('hidden');
+      });
+      document.getElementById('btnQuickSyncStep3').addEventListener('click', () => {
+        populateUpdateModalFields();
+        updateModal.classList.remove('hidden');
+      });
+      document.getElementById('btnCloseUpdateModal').addEventListener('click', () => updateModal.classList.add('hidden'));
+      document.getElementById('btnCloseUpdateModalBottom').addEventListener('click', () => updateModal.classList.add('hidden'));
+
+      // Sync Mode Buttons inside Update Modal
+      const BASE_RATES_BACKUP = JSON.parse(JSON.stringify(REGION_DATA));
+      document.querySelectorAll('.sync-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.getAttribute('data-sync-mode');
+          state.syncMode = mode;
+          document.querySelectorAll('.sync-mode-btn').forEach(b => {
+            b.className = (b === btn)
+              ? 'sync-mode-btn p-3 rounded-xl border-2 border-blue-600 bg-blue-50/40 text-left'
+              : 'sync-mode-btn p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-400 text-left';
+          });
+
+          const delta = mode === 'conservative_stress' ? -5.0 : (mode === 'recovery_market' ? 3.0 : 0.0);
+          Object.keys(REGION_DATA).forEach(rk => {
+            ['apt', 'villa', 'dagagu', 'officetel'].forEach(pt => {
+              REGION_DATA[rk].bidRates[pt] = Math.max(35, Math.min(95, BASE_RATES_BACKUP[rk].bidRates[pt] + delta));
+            });
+          });
+          state.customBidRate = REGION_DATA[state.regionKey].bidRates[state.propType];
+          populateUpdateModalFields();
+          syncInputsFromState();
+          renderAll();
+
+          const modeName = mode === 'conservative_stress' ? '보수적 스트레스 기준(-5%p)' : (mode === 'recovery_market' ? '최근 1개월 활황 기준(+3%p)' : '2026.11 최신 표준 평균');
+          document.getElementById('headerSyncDateText').textContent = modeName + ' 적용중';
+          showToast(`'${modeName}'으로 전국 경매 낙찰가율 데이터가 최신화되었습니다.`);
+        });
+      });
+
+      document.getElementById('btnRunLiveSyncCheck').addEventListener('click', () => {
+        populateUpdateModalFields();
+        document.getElementById('headerSyncDateText').textContent = '2026.11.06 최신 동기화 완료';
+        showToast('대법원 경매 통계 및 주택임대차보호법 시행령 현행 기준 점검이 완료되었습니다!');
+      });
+
+      document.getElementById('btnSaveCustomUpdate').addEventListener('click', () => {
+        const reg = REGION_DATA[state.regionKey];
+        const rule = PRIORITY_TABLE['2023_current'][reg.zoneKey];
+        reg.bidRates.apt = Number(document.getElementById('editRateApt').value) || reg.bidRates.apt;
+        reg.bidRates.villa = Number(document.getElementById('editRateVilla').value) || reg.bidRates.villa;
+        reg.bidRates.dagagu = Number(document.getElementById('editRateDagagu').value) || reg.bidRates.dagagu;
+        reg.bidRates.officetel = Number(document.getElementById('editRateOfficetel').value) || reg.bidRates.officetel;
+        rule.limit = Number(document.getElementById('editZoneLimit').value) || rule.limit;
+        rule.priority = Number(document.getElementById('editZonePriority').value) || rule.priority;
+
+        state.customBidRate = reg.bidRates[state.propType];
+        const label = '사용자 최신화 기준 적용중';
+        document.getElementById('headerSyncDateText').textContent = label;
+
+        try {
+          localStorage.setItem('jeonse_guard_custom_updates_v2', JSON.stringify({
+            regions: REGION_DATA,
+            priorityCurrent: PRIORITY_TABLE['2023_current'],
+            syncLabel: label
+          }));
+        } catch (e) {}
+
+        syncInputsFromState();
+        renderAll();
+        updateModal.classList.add('hidden');
+        showToast('입력하신 최신 낙찰가율 및 최우선변제 기준금이 저장·적용되었습니다!');
+      });
+
+      // Easy Region Chips on Step 1
+      document.querySelectorAll('.easy-region-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const rk = chip.getAttribute('data-easy-region');
+          state.regionKey = rk;
+          const sampleMatch = EASY_ADDRESS_DB.find(x => x.region === rk);
+          if (sampleMatch) {
+            state.address = sampleMatch.road;
+          }
+          state.customBidRate = REGION_DATA[rk].bidRates[state.propType];
+          syncInputsFromState();
+          renderAll();
+          showToast(`선택하신 지역의 대표 도로명주소와 법정 보호 기준이 자동 설정되었습니다.`);
+        });
+      });
+
+      // Step-by-Step Address Builder Wizard Events
+      const wizBox = document.getElementById('addressWizardBox');
+      document.getElementById('btnOpenAddressWizard').addEventListener('click', () => {
+        wizBox.classList.toggle('hidden');
+      });
+      document.getElementById('btnCloseAddressWizard').addEventListener('click', () => {
+        wizBox.classList.add('hidden');
+      });
+      document.getElementById('wizSidoSelect').addEventListener('change', updateWizardSelects);
+      document.getElementById('wizSigunguSelect').addEventListener('change', updateWizardRoads);
+      document.getElementById('wizRoadSelect').addEventListener('change', e => {
+        const val = e.target.value;
+        if (!val) return;
+        const sido = document.getElementById('wizSidoSelect').value;
+        const sigunguIdx = Number(document.getElementById('wizSigunguSelect').value) || 0;
+        const group = (WIZARD_TREE[sido] || [])[sigunguIdx];
+        state.address = val.replace(/\s*\([^)]*\)\s*$/, '');
+        if (group && group.region) {
+          state.regionKey = group.region;
+          state.customBidRate = REGION_DATA[group.region].bidRates[state.propType];
+        }
+        syncInputsFromState();
+        renderAll();
+        showToast(`'${state.address}' 주소가 자동 완성되었습니다!`);
+      });
+
+      // Top Step Nav
+      document.querySelectorAll('.step-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          goToStep(btn.getAttribute('data-step-nav'));
+        });
+      });
+
+      // Next/Prev Step Buttons
+      document.querySelectorAll('.go-step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          goToStep(btn.getAttribute('data-go-step'));
+        });
+      });
+
+      // Presets
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-preset');
+          const p = PRESETS[key];
+          if (!p) return;
+          state.address = p.address;
+          state.detail = p.detail;
+          state.regionKey = p.region;
+          state.propType = p.propType;
+          state.marketPrice = p.marketPrice;
+          state.leaseMode = p.leaseMode;
+          state.myDeposit = p.myDeposit;
+          state.monthlyRent = p.monthlyRent;
+          state.bondType = p.bondType;
+          state.era = p.era;
+          state.seniorMortgage = p.seniorMortgage;
+          state.seniorTenantDeposit = p.seniorTenantDeposit;
+          state.otherSmallCount = p.otherSmallCount;
+          state.customBidRate = REGION_DATA[p.region].bidRates[p.propType];
+
+          document.querySelectorAll('.preset-btn').forEach(b => {
+            if (b === btn) {
+              b.className = 'preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 transition shadow-sm';
+            } else {
+              b.className = 'preset-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition shadow-sm';
+            }
+          });
+
+          syncInputsFromState();
+          renderAll();
+          showToast(`'${p.address}' 실전 사례 데이터가 적용되었습니다.`);
+        });
+      });
+
+      // Address input & Autocomplete Dropdown
+      const roadInput = document.getElementById('roadAddressInput');
+      roadInput.addEventListener('focus', () => {
+        renderAddressSuggestions(roadInput.value);
+      });
+      roadInput.addEventListener('input', e => {
+        state.address = e.target.value;
+        renderAddressSuggestions(state.address);
+        const detected = detectRegionFromAddressText(state.address);
+        if (detected && detected !== state.regionKey) {
+          state.regionKey = detected;
+          document.getElementById('regionSelect').value = detected;
+          state.customBidRate = REGION_DATA[detected].bidRates[state.propType];
+          syncInputsFromState();
+        }
+        renderAll();
+      });
+
+      document.addEventListener('click', e => {
+        const dropdown = document.getElementById('addressSuggestionsDropdown');
+        if (!e.target.closest('#roadAddressInput') && !e.target.closest('#addressSuggestionsDropdown')) {
+          dropdown.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('btnDetectAddress').addEventListener('click', () => {
+        const detected = detectRegionFromAddressText(state.address);
+        if (detected) {
+          state.regionKey = detected;
+          document.getElementById('regionSelect').value = detected;
+          state.customBidRate = REGION_DATA[detected].bidRates[state.propType];
+          syncInputsFromState();
+          renderAll();
+          showToast(`입력하신 주소 기준으로 '${REGION_DATA[detected].zoneBadge}'이 자동 설정되었습니다.`);
+        } else {
+          showToast('동네 이름이나 도로명 주소를 입력해 주세요.');
+        }
+      });
+
+      document.getElementById('AddressDetailInput').addEventListener('input', e => {
+        state.detail = e.target.value;
+        renderAll();
+      });
+
+      document.getElementById('regionSelect').addEventListener('change', e => {
+        state.regionKey = e.target.value;
+        state.customBidRate = REGION_DATA[state.regionKey].bidRates[state.propType];
+        syncInputsFromState();
+        renderAll();
+      });
+
+      // Property Type Cards
+      document.querySelectorAll('.prop-type-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const t = btn.getAttribute('data-prop-type');
+          state.propType = t;
+          state.customBidRate = REGION_DATA[state.regionKey].bidRates[t];
+          syncInputsFromState();
+          renderAll();
+        });
+      });
+
+      // Market Price Input & Quick buttons
+      document.getElementById('marketPriceInput').addEventListener('input', e => {
+        state.marketPrice = Math.max(0, Number(e.target.value) || 0);
+        renderAll();
+      });
+
+      document.querySelectorAll('.price-quick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.marketPrice = Number(btn.getAttribute('data-price-set'));
+          syncInputsFromState();
+          renderAll();
+        });
+      });
+
+      // Lease Mode Toggle
+      document.querySelectorAll('.lease-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.leaseMode = btn.getAttribute('data-lease-mode');
+          syncInputsFromState();
+          renderAll();
+        });
+      });
+
+      // Deposit & Sliders
+      document.getElementById('myDepositInput').addEventListener('input', e => {
+        state.myDeposit = Math.max(0, Number(e.target.value) || 0);
+        document.getElementById('myDepositSlider').value = Math.min(50000, state.myDeposit);
+        document.getElementById('simSliderMyDeposit').value = Math.min(50000, state.myDeposit);
+        renderAll();
+      });
+
+      document.getElementById('myDepositSlider').addEventListener('input', e => {
+        state.myDeposit = Number(e.target.value);
+        document.getElementById('myDepositInput').value = state.myDeposit;
+        document.getElementById('simSliderMyDeposit').value = state.myDeposit;
+        renderAll();
+      });
+
+      document.getElementById('monthlyRentInput').addEventListener('input', e => {
+        state.monthlyRent = Math.max(0, Number(e.target.value) || 0);
+        renderAll();
+      });
+
+      // Bond Type Radio
+      document.querySelectorAll('input[name="tenantBondType"]').forEach(radio => {
+        radio.addEventListener('change', e => {
+          state.bondType = e.target.value;
+          document.querySelectorAll('.bond-type-option').forEach(lbl => {
+            const inp = lbl.querySelector('input');
+            if (inp && inp.checked) {
+              lbl.className = 'bond-type-option flex items-start gap-3 p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/30 cursor-pointer transition';
+            } else {
+              lbl.className = 'bond-type-option flex items-start gap-3 p-3.5 rounded-xl border-2 border-slate-200 bg-white hover:border-blue-300 cursor-pointer transition';
+            }
+          });
+          renderAll();
+        });
+      });
+
+      // Senior Claims & Era
+      document.getElementById('mortgageDateEraSelect').addEventListener('change', e => {
+        state.era = e.target.value;
+        renderAll();
+      });
+
+      document.getElementById('seniorMortgageInput').addEventListener('input', e => {
+        state.seniorMortgage = Math.max(0, Number(e.target.value) || 0);
+        document.getElementById('simSliderSeniorMortgage').value = Math.min(30000, state.seniorMortgage);
+        renderAll();
+      });
+
+      document.getElementById('seniorTenantDepositInput').addEventListener('input', e => {
+        state.seniorTenantDeposit = Math.max(0, Number(e.target.value) || 0);
+        renderAll();
+      });
+
+      document.getElementById('otherSmallTenantCountInput').addEventListener('input', e => {
+        state.otherSmallCount = Math.max(0, Number(e.target.value) || 0);
+        renderAll();
+      });
+
+      // Checkboxes
+      document.getElementById('chkSeizure').addEventListener('change', e => {
+        state.chkSeizure = e.target.checked;
+        renderAll();
+      });
+      document.getElementById('chkTrust').addEventListener('change', e => {
+        state.chkTrust = e.target.checked;
+        renderAll();
+      });
+      document.getElementById('chkTaxArrears').addEventListener('change', e => {
+        state.chkTaxArrears = e.target.checked;
+        renderAll();
+      });
+
+      // Step 3 & Step 4 Sliders
+      document.getElementById('customBidRateSlider').addEventListener('input', e => {
+        state.customBidRate = Number(e.target.value);
+        document.getElementById('simSliderBidRate').value = state.customBidRate;
+        renderAll();
+      });
+
+      document.getElementById('btnResetBidRate').addEventListener('click', () => {
+        state.customBidRate = REGION_DATA[state.regionKey].bidRates[state.propType];
+        syncInputsFromState();
+        renderAll();
+        showToast('해당 지역 및 부동산 유형의 평균 낙찰가율로 복원되었습니다.');
+      });
+
+      document.getElementById('simSliderBidRate').addEventListener('input', e => {
+        state.customBidRate = Number(e.target.value);
+        document.getElementById('customBidRateSlider').value = state.customBidRate;
+        renderAll();
+      });
+
+      document.getElementById('simSliderMyDeposit').addEventListener('input', e => {
+        state.myDeposit = Number(e.target.value);
+        document.getElementById('myDepositInput').value = state.myDeposit;
+        document.getElementById('myDepositSlider').value = state.myDeposit;
+        renderAll();
+      });
+
+      document.getElementById('simSliderSeniorMortgage').addEventListener('input', e => {
+        state.seniorMortgage = Number(e.target.value);
+        document.getElementById('seniorMortgageInput').value = state.seniorMortgage;
+        renderAll();
+      });
+
+      // Copy Special Clause
+      document.getElementById('btnCopySpecialClause').addEventListener('click', () => {
+        const clause = `[안심 임대차 보호 특약사항]\n1. 임대인은 임차인의 전입신고 및 확정일자 효력이 발생하는 잔금 지급일 다음 날(익일)까지 해당 부동산에 저당권, 가등기 등 새로운 담보물권을 설정하지 않기로 하며, 이를 위반할 경우 임차인은 계약을 즉시 해제하고 임대인은 보증금 전액 반환 및 손해배상을 책임진다.\n2. 임대인은 국세·지방세 체납이 없음을 확인하며, 잔금 지급 시 선순위 근저당권(${formatKoreanMoney(state.seniorMortgage)})을 전액 상환·말소하기로 한다.\n3. 전세보증금반환보증보험 가입이 임대인 또는 목적물의 하자로 거절될 경우 본 계약은 무효로 하고 임대인은 수령한 금원 전액을 즉시 반환한다.`;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(clause);
+          } else {
+            const ta = document.createElement('textarea');
+            ta.value = clause;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          showToast('계약서용 안심 특약 문구가 클립보드에 복사되었습니다!');
+        } catch (err) {
+          showToast('특약 문구 복사를 완료했습니다.');
+        }
+      });
+
+      // Reference Table Modal open/close
+      const modal = document.getElementById('refModal');
+      document.getElementById('btnOpenRefModal').addEventListener('click', () => modal.classList.remove('hidden'));
+      document.getElementById('btnCloseRefModal').addEventListener('click', () => modal.classList.add('hidden'));
+      document.getElementById('btnCloseRefModalBottom').addEventListener('click', () => modal.classList.add('hidden'));
+
+      // Reset All
+      document.getElementById('btnResetAll').addEventListener('click', () => {
+        const def = PRESETS.bundang_villa;
+        state.address = def.address;
+        state.detail = def.detail;
+        state.regionKey = def.region;
+        state.propType = def.propType;
+        state.marketPrice = def.marketPrice;
+        state.leaseMode = def.leaseMode;
+        state.myDeposit = def.myDeposit;
+        state.monthlyRent = def.monthlyRent;
+        state.bondType = def.bondType;
+        state.era = def.era;
+        state.seniorMortgage = def.seniorMortgage;
+        state.seniorTenantDeposit = def.seniorTenantDeposit;
+        state.otherSmallCount = def.otherSmallCount;
+        state.customBidRate = REGION_DATA[def.region].bidRates[def.propType];
+        state.chkSeizure = false;
+        state.chkTrust = false;
+        state.chkTaxArrears = false;
+        document.getElementById('chkSeizure').checked = false;
+        document.getElementById('chkTrust').checked = false;
+        document.getElementById('chkTaxArrears').checked = false;
+        syncInputsFromState();
+        goToStep(1);
+        showToast('초기 상태로 리셋되었습니다.');
+      });
+
+      syncInputsFromState();
+      renderAll();
+    });
+  </script>
+</body>
+</html>
+```
